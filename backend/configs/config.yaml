@@ -1,3 +1,18 @@
+app:
+  name: "stockflow-backend"
+
+client:
+  host: "localhost"
+  port: 5173
+
+server:
+  host: "localhost"
+  port: 8080
+  timeout:
+    read: "5s"
+    write: "5s"
+    shutdown: "10s"
+
 database:
   host: "localhost"
   port: 5432
@@ -5,3 +20,11 @@ database:
   pass: ""
   name: "stockflow_db"
   ssl_mode: "disable"
+  max_conns: 5
+  min_conns: 1
+  max_conn_lifetime: "1h"
+  max_conn_idle_time: "30m"
+
+tracer:
+  host: "localhost"
+  port: 4318
