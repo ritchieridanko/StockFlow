@@ -1,0 +1,27 @@
+# ---------- BUILD STAGE ----------
+FROM golang:1.25.11-alpine3.22 AS builder
+
+RUN apk add --no-cache git
+
+WORKDIR /app
+
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+
+COPY backend/cmd/migrator ./cmd/migrator
+COPY backend/configs ./configs
+COPY backend/internal/infra/database ./internal/infra/database
+COPY backend/migrations ./migrations
+
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/migrator cmd/migrator/main.go
+
+# ---------- RUNTIME STAGE ----------
+FROM alpine:3.22
+
+WORKDIR /root
+
+COPY --from=builder /app/bin ./bin
+COPY --from=builder /app/configs ./configs
+COPY --from=builder /app/migrations ./migrations
+
+ENTRYPOINT ["./bin/migrator"]
