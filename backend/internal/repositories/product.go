@@ -18,6 +18,7 @@ type ProductRepository interface {
 	GetStock(ctx context.Context, productID int) (stock int, err *ce.Error)
 	Update(ctx context.Context, productID int, data *models.UpdateProduct) (p *models.Product, err *ce.Error)
 	UpdateStock(ctx context.Context, productID, stockDiff int) (p *models.Product, err *ce.Error)
+	Delete(ctx context.Context, productID int) (err *ce.Error)
 }
 
 type productRepository struct {
@@ -240,4 +241,31 @@ func (r *productRepository) UpdateStock(ctx context.Context, productID, stockDif
 	}
 
 	return &p, nil
+}
+
+func (r *productRepository) Delete(ctx context.Context, productID int) *ce.Error {
+	query := "DELETE FROM products WHERE id = $1"
+
+	err := r.database.Execute(
+		ctx, query,
+		productID,
+	)
+	if err != nil {
+		wrappedErr := fmt.Errorf("failed to delete product: %w", err)
+
+		if errors.Is(err, ce.ErrDBAffectNoRows) {
+			return ce.NewError(
+				ce.CodeProductNotFound,
+				ce.MsgProductNotFound,
+				wrappedErr,
+			)
+		}
+		return ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			wrappedErr,
+		)
+	}
+
+	return nil
 }

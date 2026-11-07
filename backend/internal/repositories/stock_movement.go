@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/ritchieridanko/stockflow/backend/internal/infra/database"
@@ -12,6 +13,7 @@ import (
 type StockMovementRepository interface {
 	Create(ctx context.Context, data *models.CreateStockMovement) (sm *models.StockMovement, err *ce.Error)
 	GetAllByProductID(ctx context.Context, productID int) (sms []models.StockMovement, err *ce.Error)
+	HasAny(ctx context.Context, productID int) (exists bool, err *ce.Error)
 }
 
 type stockMovementRepository struct {
@@ -121,4 +123,31 @@ func (r *stockMovementRepository) GetAllByProductID(ctx context.Context, product
 	}
 
 	return sms, nil
+}
+
+func (r *stockMovementRepository) HasAny(ctx context.Context, productID int) (bool, *ce.Error) {
+	query := "SELECT 1 FROM stock_movements WHERE product_id = $1"
+	if r.database.WithinTx(ctx) {
+		query += " FOR UPDATE"
+	}
+
+	var exists int
+	err := r.database.QueryOne(
+		ctx, query,
+		productID,
+	).Scan(
+		&exists,
+	)
+	if err != nil {
+		if errors.Is(err, ce.ErrDBQueryNoRows) {
+			return false, nil
+		}
+		return false, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to check if product has any stock movements: %w", err),
+		)
+	}
+
+	return true, nil
 }

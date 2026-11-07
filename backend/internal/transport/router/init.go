@@ -50,6 +50,8 @@ func Init(
 		id := product.Group("/:id")
 		{
 			id.PUT("", ph.UpdateProduct)
+			id.DELETE("", ph.DeleteProduct)
+
 			id.POST("/stock", ph.UpdateStock)
 			id.GET("/movements", ph.GetAllProductStockMovements)
 		}

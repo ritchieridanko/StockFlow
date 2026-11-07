@@ -194,6 +194,31 @@ func (h *ProductHandler) UpdateStock(ctx *gin.Context) {
 	)
 }
 
+func (h *ProductHandler) DeleteProduct(ctx *gin.Context) {
+	productID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ce.NewError(
+			ce.CodeInvalidParam,
+			ce.MsgInvalidParam,
+			fmt.Errorf("failed to convert url param: %w", err),
+		).Bind(
+			ctx,
+		)
+		return
+	}
+
+	delErr := h.pu.DeleteProduct(
+		ctx.Request.Context(),
+		productID,
+	)
+	if delErr != nil {
+		delErr.Bind(ctx)
+		return
+	}
+
+	utils.SetResponse[any](ctx, http.StatusNoContent, "", nil)
+}
+
 func (h *ProductHandler) toProduct(p *models.Product) *dtos.Product {
 	if p == nil {
 		return nil

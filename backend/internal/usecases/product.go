@@ -19,6 +19,7 @@ type ProductUsecase interface {
 	GetAllProductStockMovements(ctx context.Context, productID int) (sms []models.StockMovement, err *ce.Error)
 	UpdateProduct(ctx context.Context, req *models.UpdateProductReq) (p *models.Product, err *ce.Error)
 	UpdateStock(ctx context.Context, req *models.UpdateStockReq) (p *models.Product, err *ce.Error)
+	DeleteProduct(ctx context.Context, productID int) (err *ce.Error)
 }
 
 type productUsecase struct {
@@ -171,4 +172,19 @@ func (u *productUsecase) UpdateStock(ctx context.Context, req *models.UpdateStoc
 	})
 
 	return p, err
+}
+
+func (u *productUsecase) DeleteProduct(ctx context.Context, productID int) *ce.Error {
+	ctx, span := u.tracer.Start(ctx, "product.delete")
+	defer span.End()
+
+	exists, err := u.smr.HasAny(ctx, productID)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return ce.NewError(ce.CodeProductHasHistory, ce.MsgProductHasHistory, nil)
+	}
+
+	return u.pr.Delete(ctx, productID)
 }

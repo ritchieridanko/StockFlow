@@ -18,6 +18,7 @@ const (
 	CodeInternal          errCode = "INTERNAL"
 	CodeInvalidParam      errCode = "INVALID_PARAM"
 	CodeInvalidPayload    errCode = "INVALID_PAYLOAD"
+	CodeProductHasHistory errCode = "PRODUCT_HAS_HISTORY"
 	CodeProductNotFound   errCode = "PRODUCT_NOT_FOUND"
 	CodeSKUAlreadyExists  errCode = "SKU_ALREADY_EXISTS"
 	CodeUnknown           errCode = "UNKNOWN"
@@ -29,6 +30,7 @@ const (
 	MsgInternalServer    string = "Internal server error"
 	MsgInvalidParam      string = "Invalid param"
 	MsgInvalidPayload    string = "Invalid payload"
+	MsgProductHasHistory string = "Unable to delete product with stock movements"
 	MsgProductNotFound   string = "Product is not found"
 	MsgSKUAlreadyExists  string = "SKU is already registered"
 )
