@@ -15,6 +15,18 @@ type Product struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type StockMovement struct {
+	ID        int `json:"id"`
+	ProductID int `json:"product_id"`
+
+	UpdateType string  `json:"type"`
+	Quantity   int     `json:"qty"`
+	Note       *string `json:"note"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type (
 	CreateProductRequest struct {
 		SKU   string `json:"sku" binding:"required"`
@@ -38,6 +50,10 @@ type (
 type (
 	CreateProductResponse struct {
 		Product *Product `json:"product,omitempty"`
+	}
+
+	GetAllProductStockMovementsResponse struct {
+		StockMovements []StockMovement `json:"stock_movements"`
 	}
 
 	UpdateProductResponse struct {

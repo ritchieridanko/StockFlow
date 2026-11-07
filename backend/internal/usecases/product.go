@@ -16,6 +16,7 @@ import (
 
 type ProductUsecase interface {
 	CreateProduct(ctx context.Context, req *models.CreateProductReq) (p *models.Product, err *ce.Error)
+	GetAllProductStockMovements(ctx context.Context, productID int) (sms []models.StockMovement, err *ce.Error)
 	UpdateProduct(ctx context.Context, req *models.UpdateProductReq) (p *models.Product, err *ce.Error)
 	UpdateStock(ctx context.Context, req *models.UpdateStockReq) (p *models.Product, err *ce.Error)
 }
@@ -72,6 +73,10 @@ func (u *productUsecase) CreateProduct(ctx context.Context, req *models.CreatePr
 			Price: req.Price,
 		},
 	)
+}
+
+func (u *productUsecase) GetAllProductStockMovements(ctx context.Context, productID int) ([]models.StockMovement, *ce.Error) {
+	return u.smr.GetAllByProductID(ctx, productID)
 }
 
 func (u *productUsecase) UpdateProduct(ctx context.Context, req *models.UpdateProductReq) (*models.Product, *ce.Error) {

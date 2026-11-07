@@ -57,6 +57,43 @@ func (h *ProductHandler) CreateProduct(ctx *gin.Context) {
 	)
 }
 
+func (h *ProductHandler) GetAllProductStockMovements(ctx *gin.Context) {
+	productID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ce.NewError(
+			ce.CodeInvalidParam,
+			ce.MsgInvalidParam,
+			fmt.Errorf("failed to convert url param: %w", err),
+		).Bind(
+			ctx,
+		)
+		return
+	}
+
+	sms, getErr := h.pu.GetAllProductStockMovements(
+		ctx.Request.Context(),
+		productID,
+	)
+	if getErr != nil {
+		getErr.Bind(ctx)
+		return
+	}
+
+	movements := make([]dtos.StockMovement, 0, len(sms))
+	for _, sm := range sms {
+		movements = append(movements, *h.toStockMovement(&sm))
+	}
+
+	utils.SetResponse(
+		ctx,
+		http.StatusOK,
+		"Stock movements retrieved successfully",
+		dtos.GetAllProductStockMovementsResponse{
+			StockMovements: movements,
+		},
+	)
+}
+
 func (h *ProductHandler) UpdateProduct(ctx *gin.Context) {
 	productID, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -172,5 +209,22 @@ func (h *ProductHandler) toProduct(p *models.Product) *dtos.Product {
 
 		CreatedAt: p.CreatedAt,
 		UpdatedAt: p.UpdatedAt,
+	}
+}
+
+func (h *ProductHandler) toStockMovement(sm *models.StockMovement) *dtos.StockMovement {
+	if sm == nil {
+		return nil
+	}
+	return &dtos.StockMovement{
+		ID:        sm.ID,
+		ProductID: sm.ProductID,
+
+		UpdateType: sm.UpdateType,
+		Quantity:   sm.Quantity,
+		Note:       sm.Note,
+
+		CreatedAt: sm.CreatedAt,
+		UpdatedAt: sm.UpdatedAt,
 	}
 }

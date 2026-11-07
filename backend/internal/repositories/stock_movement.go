@@ -11,6 +11,7 @@ import (
 
 type StockMovementRepository interface {
 	Create(ctx context.Context, data *models.CreateStockMovement) (sm *models.StockMovement, err *ce.Error)
+	GetAllByProductID(ctx context.Context, productID int) (sms []models.StockMovement, err *ce.Error)
 }
 
 type stockMovementRepository struct {
@@ -59,4 +60,65 @@ func (r *stockMovementRepository) Create(ctx context.Context, data *models.Creat
 	}
 
 	return &sm, nil
+}
+
+func (r *stockMovementRepository) GetAllByProductID(ctx context.Context, productID int) ([]models.StockMovement, *ce.Error) {
+	query := `
+		SELECT
+			id, product_id, type, qty,
+			note, created_at, updated_at
+		FROM
+			stock_movements
+		WHERE
+			product_id = $1
+		ORDER BY
+			created_at DESC,
+			id ASC
+	`
+
+	rows, err := r.database.QueryAll(
+		ctx, query,
+		productID,
+	)
+	if err != nil {
+		return nil, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to get all stock movements by product id: %w", err),
+		)
+	}
+	defer rows.Close()
+
+	sms := make([]models.StockMovement, 0)
+
+	for rows.Next() {
+		var sm models.StockMovement
+		err := rows.Scan(
+			&sm.ID,
+			&sm.ProductID,
+			&sm.UpdateType,
+			&sm.Quantity,
+			&sm.Note,
+			&sm.CreatedAt,
+			&sm.UpdatedAt,
+		)
+		if err != nil {
+			return nil, ce.NewError(
+				ce.CodeInternal,
+				ce.MsgInternalServer,
+				fmt.Errorf("failed to get all stock movements by product id: %w", err),
+			)
+		}
+
+		sms = append(sms, sm)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to get all stock movements by product id: %w", err),
+		)
+	}
+
+	return sms, nil
 }
