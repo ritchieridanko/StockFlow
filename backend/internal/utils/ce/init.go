@@ -54,8 +54,12 @@ func (e *Error) Bind(ctx *gin.Context) {
 
 func (e *Error) ToHTTPErrCode() int {
 	switch e.code {
-	case CodeInvalidPayload:
+	case
+		CodeInvalidParam,
+		CodeInvalidPayload:
 		return http.StatusBadRequest
+	case CodeProductNotFound:
+		return http.StatusNotFound
 	case CodeSKUAlreadyExists:
 		return http.StatusConflict
 	case

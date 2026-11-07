@@ -2,7 +2,10 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/ritchieridanko/stockflow/backend/internal/infra/database"
@@ -12,6 +15,7 @@ import (
 
 type ProductRepository interface {
 	Create(ctx context.Context, data *models.CreateProduct) (p *models.Product, err *ce.Error)
+	Update(ctx context.Context, productID int, data *models.UpdateProduct) (p *models.Product, err *ce.Error)
 }
 
 type productRepository struct {
@@ -54,6 +58,89 @@ func (r *productRepository) Create(ctx context.Context, data *models.CreateProdu
 	if err != nil {
 		wrappedErr := fmt.Errorf("failed to create product: %w", err)
 
+		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
+			return nil, ce.NewError(
+				ce.CodeSKUAlreadyExists,
+				ce.MsgSKUAlreadyExists,
+				wrappedErr,
+			)
+		}
+		return nil, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			wrappedErr,
+		)
+	}
+
+	return &p, nil
+}
+
+func (r *productRepository) Update(ctx context.Context, productID int, data *models.UpdateProduct) (*models.Product, *ce.Error) {
+	setClauses := []string{}
+	args := []any{}
+	argPos := 1
+
+	if data.SKU != nil {
+		setClauses = append(setClauses, "sku = $"+strconv.Itoa(argPos))
+		args = append(args, *data.SKU)
+		argPos++
+	}
+	if data.Name != nil {
+		setClauses = append(setClauses, "name = $"+strconv.Itoa(argPos))
+		args = append(args, *data.Name)
+		argPos++
+	}
+	if data.Price != nil {
+		setClauses = append(setClauses, "price = $"+strconv.Itoa(argPos))
+		args = append(args, *data.Price)
+		argPos++
+	}
+	if len(setClauses) == 0 {
+		return nil, ce.NewError(ce.CodeInvalidPayload, ce.MsgInvalidPayload, nil)
+	}
+
+	setClauses = append(setClauses, "updated_at = NOW()")
+	args = append(args, productID)
+	query := fmt.Sprintf(
+		`
+			UPDATE
+				products
+			SET
+				%s
+			WHERE
+				id = $%d
+			RETURNING
+				id, sku, name, price, stock,
+				is_active, created_at, updated_at
+		`,
+		strings.Join(setClauses, ", "),
+		argPos,
+	)
+
+	var p models.Product
+	err := r.database.QueryOne(
+		ctx, query,
+		args...,
+	).Scan(
+		&p.ID,
+		&p.SKU,
+		&p.Name,
+		&p.Price,
+		&p.Stock,
+		&p.IsActive,
+		&p.CreatedAt,
+		&p.UpdatedAt,
+	)
+	if err != nil {
+		wrappedErr := fmt.Errorf("failed to update product: %w", err)
+
+		if errors.Is(err, ce.ErrDBQueryNoRows) {
+			return nil, ce.NewError(
+				ce.CodeProductNotFound,
+				ce.MsgProductNotFound,
+				wrappedErr,
+			)
+		}
 		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
 			return nil, ce.NewError(
 				ce.CodeSKUAlreadyExists,

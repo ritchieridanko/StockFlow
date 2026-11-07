@@ -21,10 +21,20 @@ type (
 		Name  string `json:"name" binding:"required"`
 		Price int    `json:"price" binding:"required"`
 	}
+
+	UpdateProductRequest struct {
+		SKU   *string `json:"sku"`
+		Name  *string `json:"name"`
+		Price *int    `json:"price"`
+	}
 )
 
 type (
 	CreateProductResponse struct {
+		Product *Product `json:"product,omitempty"`
+	}
+
+	UpdateProductResponse struct {
 		Product *Product `json:"product,omitempty"`
 	}
 )

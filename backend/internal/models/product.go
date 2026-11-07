@@ -21,4 +21,10 @@ type (
 		Name  string
 		Price int
 	}
+
+	UpdateProduct struct {
+		SKU   *string
+		Name  *string
+		Price *int
+	}
 )

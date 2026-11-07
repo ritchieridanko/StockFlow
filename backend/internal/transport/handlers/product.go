@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ritchieridanko/stockflow/backend/internal/models"
@@ -51,6 +52,56 @@ func (h *ProductHandler) CreateProduct(ctx *gin.Context) {
 		http.StatusCreated,
 		"Product created successfully",
 		dtos.CreateProductResponse{
+			Product: h.toProduct(p),
+		},
+	)
+}
+
+func (h *ProductHandler) UpdateProduct(ctx *gin.Context) {
+	productID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ce.NewError(
+			ce.CodeInvalidParam,
+			ce.MsgInvalidParam,
+			fmt.Errorf("failed to convert url param: %w", err),
+		).Bind(
+			ctx,
+		)
+		return
+	}
+
+	var payload dtos.UpdateProductRequest
+	if err := ctx.ShouldBindJSON(&payload); err != nil {
+		ce.NewError(
+			ce.CodeInvalidPayload,
+			ce.MsgInvalidPayload,
+			fmt.Errorf("failed to bind json payload: %w", err),
+		).Bind(
+			ctx,
+		)
+		return
+	}
+
+	p, updateErr := h.pu.UpdateProduct(
+		ctx.Request.Context(),
+		&models.UpdateProductReq{
+			ProductID: productID,
+
+			SKU:   payload.SKU,
+			Name:  payload.Name,
+			Price: payload.Price,
+		},
+	)
+	if updateErr != nil {
+		updateErr.Bind(ctx)
+		return
+	}
+
+	utils.SetResponse(
+		ctx,
+		http.StatusOK,
+		"Product updated successfully",
+		dtos.UpdateProductResponse{
 			Product: h.toProduct(p),
 		},
 	)

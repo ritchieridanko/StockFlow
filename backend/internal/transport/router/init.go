@@ -46,6 +46,8 @@ func Init(
 	product := api.Group("/products")
 	{
 		product.POST("", ph.CreateProduct)
+
+		product.PUT("/:id", ph.UpdateProduct)
 	}
 
 	return &Router{router: r}
