@@ -107,6 +107,56 @@ func (h *ProductHandler) UpdateProduct(ctx *gin.Context) {
 	)
 }
 
+func (h *ProductHandler) UpdateStock(ctx *gin.Context) {
+	productID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ce.NewError(
+			ce.CodeInvalidParam,
+			ce.MsgInvalidParam,
+			fmt.Errorf("failed to convert url param: %w", err),
+		).Bind(
+			ctx,
+		)
+		return
+	}
+
+	var payload dtos.UpdateStockRequest
+	if err := ctx.ShouldBindJSON(&payload); err != nil {
+		ce.NewError(
+			ce.CodeInvalidPayload,
+			ce.MsgInvalidPayload,
+			fmt.Errorf("failed to bind json payload: %w", err),
+		).Bind(
+			ctx,
+		)
+		return
+	}
+
+	p, updateErr := h.pu.UpdateStock(
+		ctx.Request.Context(),
+		&models.UpdateStockReq{
+			ProductID: productID,
+
+			UpdateType: payload.UpdateType,
+			Quantity:   payload.Quantity,
+			Note:       payload.Note,
+		},
+	)
+	if updateErr != nil {
+		updateErr.Bind(ctx)
+		return
+	}
+
+	utils.SetResponse(
+		ctx,
+		http.StatusOK,
+		"Stock updated successfully",
+		dtos.UpdateStockResponse{
+			Product: h.toProduct(p),
+		},
+	)
+}
+
 func (h *ProductHandler) toProduct(p *models.Product) *dtos.Product {
 	if p == nil {
 		return nil

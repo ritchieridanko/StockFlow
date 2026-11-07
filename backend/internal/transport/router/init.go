@@ -47,7 +47,12 @@ func Init(
 	{
 		product.POST("", ph.CreateProduct)
 
-		product.PUT("/:id", ph.UpdateProduct)
+		id := product.Group("/:id")
+		{
+			id.PUT("", ph.UpdateProduct)
+
+			id.POST("/stock", ph.UpdateStock)
+		}
 	}
 
 	return &Router{router: r}

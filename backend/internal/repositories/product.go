@@ -15,7 +15,9 @@ import (
 
 type ProductRepository interface {
 	Create(ctx context.Context, data *models.CreateProduct) (p *models.Product, err *ce.Error)
+	GetStock(ctx context.Context, productID int) (stock int, err *ce.Error)
 	Update(ctx context.Context, productID int, data *models.UpdateProduct) (p *models.Product, err *ce.Error)
+	UpdateStock(ctx context.Context, productID, stockDiff int) (p *models.Product, err *ce.Error)
 }
 
 type productRepository struct {
@@ -73,6 +75,39 @@ func (r *productRepository) Create(ctx context.Context, data *models.CreateProdu
 	}
 
 	return &p, nil
+}
+
+func (r *productRepository) GetStock(ctx context.Context, productID int) (int, *ce.Error) {
+	query := "SELECT stock FROM products WHERE id = $1"
+	if r.database.WithinTx(ctx) {
+		query += " FOR UPDATE"
+	}
+
+	var stock int
+	err := r.database.QueryOne(
+		ctx, query,
+		productID,
+	).Scan(
+		&stock,
+	)
+	if err != nil {
+		wrappedErr := fmt.Errorf("failed to get product stock: %w", err)
+
+		if errors.Is(err, ce.ErrDBQueryNoRows) {
+			return 0, ce.NewError(
+				ce.CodeProductNotFound,
+				ce.MsgProductNotFound,
+				wrappedErr,
+			)
+		}
+		return 0, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			wrappedErr,
+		)
+	}
+
+	return stock, nil
 }
 
 func (r *productRepository) Update(ctx context.Context, productID int, data *models.UpdateProduct) (*models.Product, *ce.Error) {
@@ -145,6 +180,55 @@ func (r *productRepository) Update(ctx context.Context, productID int, data *mod
 			return nil, ce.NewError(
 				ce.CodeSKUAlreadyExists,
 				ce.MsgSKUAlreadyExists,
+				wrappedErr,
+			)
+		}
+		return nil, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			wrappedErr,
+		)
+	}
+
+	return &p, nil
+}
+
+func (r *productRepository) UpdateStock(ctx context.Context, productID, stockDiff int) (*models.Product, *ce.Error) {
+	query := `
+		UPDATE
+			products
+		SET
+			stock = stock + $2,
+			updated_at = NOW()
+		WHERE
+			id = $1
+		RETURNING
+			id, sku, name, price, stock,
+			is_active, created_at, updated_at
+	`
+
+	var p models.Product
+	err := r.database.QueryOne(
+		ctx, query,
+		productID,
+		stockDiff,
+	).Scan(
+		&p.ID,
+		&p.SKU,
+		&p.Name,
+		&p.Price,
+		&p.Stock,
+		&p.IsActive,
+		&p.CreatedAt,
+		&p.UpdatedAt,
+	)
+	if err != nil {
+		wrappedErr := fmt.Errorf("failed to update product stock: %w", err)
+
+		if errors.Is(err, ce.ErrDBQueryNoRows) {
+			return nil, ce.NewError(
+				ce.CodeProductNotFound,
+				ce.MsgProductNotFound,
 				wrappedErr,
 			)
 		}

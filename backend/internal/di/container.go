@@ -15,11 +15,13 @@ import (
 )
 
 type Container struct {
-	config   *configs.Config
-	database *database.Database
-	logger   *logger.Logger
+	config     *configs.Config
+	database   *database.Database
+	transactor *database.Transactor
+	logger     *logger.Logger
 
-	pr repositories.ProductRepository
+	pr  repositories.ProductRepository
+	smr repositories.StockMovementRepository
 
 	validator *validator.Validator
 
@@ -34,17 +36,19 @@ type Container struct {
 func Init(cfg *configs.Config, inf *infra.Infra) *Container {
 	// Infra
 	db := database.NewDatabase(inf.Database())
+	tx := database.NewTransactor(inf.Database())
 	l := logger.NewLogger(inf.Logger())
 
 	// Repositories
 	pr := repositories.NewProductRepository(db)
+	smr := repositories.NewStockMovementRepository(db)
 
 	// Utils
 	v := validator.Init()
 
 	// Usecases
 	ut := otel.Tracer("usecase")
-	pu := usecases.NewProductUsecase(pr, v, ut)
+	pu := usecases.NewProductUsecase(pr, smr, tx, v, ut)
 
 	// Handlers
 	ph := handlers.NewProductHandler(pu)
@@ -56,15 +60,17 @@ func Init(cfg *configs.Config, inf *infra.Infra) *Container {
 	srv := server.Init(&cfg.Server, r, l)
 
 	return &Container{
-		config:    cfg,
-		database:  db,
-		logger:    l,
-		pr:        pr,
-		validator: v,
-		pu:        pu,
-		ph:        ph,
-		router:    r,
-		server:    srv,
+		config:     cfg,
+		database:   db,
+		transactor: tx,
+		logger:     l,
+		pr:         pr,
+		smr:        smr,
+		validator:  v,
+		pu:         pu,
+		ph:         ph,
+		router:     r,
+		server:     srv,
 	}
 }
 

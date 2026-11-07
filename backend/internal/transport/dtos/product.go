@@ -27,6 +27,12 @@ type (
 		Name  *string `json:"name"`
 		Price *int    `json:"price"`
 	}
+
+	UpdateStockRequest struct {
+		UpdateType string  `json:"type" binding:"required"`
+		Quantity   int     `json:"qty" binding:"required"`
+		Note       *string `json:"note"`
+	}
 )
 
 type (
@@ -35,6 +41,10 @@ type (
 	}
 
 	UpdateProductResponse struct {
+		Product *Product `json:"product,omitempty"`
+	}
+
+	UpdateStockResponse struct {
 		Product *Product `json:"product,omitempty"`
 	}
 )

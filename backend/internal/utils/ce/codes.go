@@ -14,19 +14,21 @@ var (
 
 // Internal Error Codes
 const (
-	CodeInternal         errCode = "INTERNAL"
-	CodeInvalidParam     errCode = "INVALID_PARAM"
-	CodeInvalidPayload   errCode = "INVALID_PAYLOAD"
-	CodeProductNotFound  errCode = "PRODUCT_NOT_FOUND"
-	CodeSKUAlreadyExists errCode = "SKU_ALREADY_EXISTS"
-	CodeUnknown          errCode = "UNKNOWN"
+	CodeInsufficientStock errCode = "INSUFFICIENT_STOCK"
+	CodeInternal          errCode = "INTERNAL"
+	CodeInvalidParam      errCode = "INVALID_PARAM"
+	CodeInvalidPayload    errCode = "INVALID_PAYLOAD"
+	CodeProductNotFound   errCode = "PRODUCT_NOT_FOUND"
+	CodeSKUAlreadyExists  errCode = "SKU_ALREADY_EXISTS"
+	CodeUnknown           errCode = "UNKNOWN"
 )
 
 // External Error Messages
 const (
-	MsgInternalServer   string = "Internal server error"
-	MsgInvalidParam     string = "Invalid param"
-	MsgInvalidPayload   string = "Invalid payload"
-	MsgProductNotFound  string = "Product is not found"
-	MsgSKUAlreadyExists string = "SKU is already registered"
+	MsgInsufficientStock string = "Insufficient stock"
+	MsgInternalServer    string = "Internal server error"
+	MsgInvalidParam      string = "Invalid param"
+	MsgInvalidPayload    string = "Invalid payload"
+	MsgProductNotFound   string = "Product is not found"
+	MsgSKUAlreadyExists  string = "SKU is already registered"
 )

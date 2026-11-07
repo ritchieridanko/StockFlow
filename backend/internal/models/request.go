@@ -16,4 +16,14 @@ type (
 		Name  *string
 		Price *int
 	}
+
+	UpdateStockReq struct {
+		// Params
+		ProductID int
+
+		// Payload
+		UpdateType string
+		Quantity   int
+		Note       *string
+	}
 )

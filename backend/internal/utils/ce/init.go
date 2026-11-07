@@ -60,7 +60,9 @@ func (e *Error) ToHTTPErrCode() int {
 		return http.StatusBadRequest
 	case CodeProductNotFound:
 		return http.StatusNotFound
-	case CodeSKUAlreadyExists:
+	case
+		CodeInsufficientStock,
+		CodeSKUAlreadyExists:
 		return http.StatusConflict
 	case
 		CodeInternal,
