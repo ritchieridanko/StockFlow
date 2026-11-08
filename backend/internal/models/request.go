@@ -27,3 +27,15 @@ type (
 		Note       *string
 	}
 )
+
+type (
+	OrderItemReq struct {
+		SKU      string
+		Quantity int
+	}
+
+	CreateOrderReq struct {
+		Customer string
+		Items    []OrderItemReq
+	}
+)

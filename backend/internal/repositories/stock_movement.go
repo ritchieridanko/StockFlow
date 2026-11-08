@@ -92,7 +92,6 @@ func (r *stockMovementRepository) GetAllByProductID(ctx context.Context, product
 	defer rows.Close()
 
 	sms := make([]models.StockMovement, 0)
-
 	for rows.Next() {
 		var sm models.StockMovement
 		err := rows.Scan(

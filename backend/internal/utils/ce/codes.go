@@ -26,6 +26,7 @@ const (
 
 // External Error Messages
 const (
+	MsgEmptyOrderItems   string = "Order items cannot be empty"
 	MsgInsufficientStock string = "Insufficient stock"
 	MsgInternalServer    string = "Internal server error"
 	MsgInvalidParam      string = "Invalid param"

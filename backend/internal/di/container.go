@@ -20,13 +20,17 @@ type Container struct {
 	transactor *database.Transactor
 	logger     *logger.Logger
 
+	or  repositories.OrderRepository
+	oir repositories.OrderItemRepository
 	pr  repositories.ProductRepository
 	smr repositories.StockMovementRepository
 
 	validator *validator.Validator
 
+	ou usecases.OrderUsecase
 	pu usecases.ProductUsecase
 
+	oh *handlers.OrderHandler
 	ph *handlers.ProductHandler
 
 	router *router.Router
@@ -40,6 +44,8 @@ func Init(cfg *configs.Config, inf *infra.Infra) *Container {
 	l := logger.NewLogger(inf.Logger())
 
 	// Repositories
+	or := repositories.NewOrderRepository(db)
+	oir := repositories.NewOrderItemRepository(db)
 	pr := repositories.NewProductRepository(db)
 	smr := repositories.NewStockMovementRepository(db)
 
@@ -48,13 +54,15 @@ func Init(cfg *configs.Config, inf *infra.Infra) *Container {
 
 	// Usecases
 	ut := otel.Tracer("usecase")
+	ou := usecases.NewOrderUsecase(or, oir, pr, smr, tx, v, ut)
 	pu := usecases.NewProductUsecase(pr, smr, tx, v, ut)
 
 	// Handlers
+	oh := handlers.NewOrderHandler(ou)
 	ph := handlers.NewProductHandler(pu)
 
 	// Router
-	r := router.Init(cfg.App.Name, cfg.Client.Addr, l, ph)
+	r := router.Init(cfg.App.Name, cfg.Client.Addr, l, oh, ph)
 
 	// Server
 	srv := server.Init(&cfg.Server, r, l)
@@ -64,10 +72,14 @@ func Init(cfg *configs.Config, inf *infra.Infra) *Container {
 		database:   db,
 		transactor: tx,
 		logger:     l,
+		or:         or,
+		oir:        oir,
 		pr:         pr,
 		smr:        smr,
 		validator:  v,
+		ou:         ou,
 		pu:         pu,
+		oh:         oh,
 		ph:         ph,
 		router:     r,
 		server:     srv,

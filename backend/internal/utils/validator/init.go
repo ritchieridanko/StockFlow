@@ -13,6 +13,14 @@ func Init() *Validator {
 	return &Validator{}
 }
 
+func (v *Validator) Customer(value string) (bool, string) {
+	length := utf8.RuneCountInString(value)
+	if length < nameMinLength {
+		return false, "Customer is required"
+	}
+	return true, ""
+}
+
 func (v *Validator) Name(value string) (bool, string) {
 	length := utf8.RuneCountInString(value)
 	if length < nameMinLength {

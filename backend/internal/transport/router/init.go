@@ -18,6 +18,7 @@ func Init(
 	appName,
 	clientAddr string,
 	l *logger.Logger,
+	oh *handlers.OrderHandler,
 	ph *handlers.ProductHandler,
 ) *Router {
 	r := gin.New()
@@ -55,6 +56,11 @@ func Init(
 			id.POST("/stock", ph.UpdateStock)
 			id.GET("/movements", ph.GetAllProductStockMovements)
 		}
+	}
+
+	order := api.Group("/orders")
+	{
+		order.POST("", oh.Create)
 	}
 
 	return &Router{router: r}

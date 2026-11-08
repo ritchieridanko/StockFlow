@@ -16,6 +16,7 @@ import (
 type ProductRepository interface {
 	Create(ctx context.Context, data *models.CreateProduct) (p *models.Product, err *ce.Error)
 	GetStock(ctx context.Context, productID int) (stock int, err *ce.Error)
+	GetAllBySKUsForUpdate(ctx context.Context, skus []string) (ps []models.Product, err *ce.Error)
 	Update(ctx context.Context, productID int, data *models.UpdateProduct) (p *models.Product, err *ce.Error)
 	UpdateStock(ctx context.Context, productID, stockDiff int) (p *models.Product, err *ce.Error)
 	Delete(ctx context.Context, productID int) (err *ce.Error)
@@ -109,6 +110,67 @@ func (r *productRepository) GetStock(ctx context.Context, productID int) (int, *
 	}
 
 	return stock, nil
+}
+
+func (r *productRepository) GetAllBySKUsForUpdate(ctx context.Context, skus []string) ([]models.Product, *ce.Error) {
+	query := `
+		SELECT
+			id, sku, name, price, stock,
+			is_active, created_at, updated_at
+		FROM
+			products
+		WHERE
+			sku = ANY($1)
+	`
+	if r.database.WithinTx(ctx) {
+		query += " FOR UPDATE"
+	}
+
+	rows, err := r.database.QueryAll(
+		ctx, query,
+		skus,
+	)
+	if err != nil {
+		return nil, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to get all products by skus for update: %w", err),
+		)
+	}
+	defer rows.Close()
+
+	ps := make([]models.Product, 0, len(skus))
+	for rows.Next() {
+		var p models.Product
+		err := rows.Scan(
+			&p.ID,
+			&p.SKU,
+			&p.Name,
+			&p.Price,
+			&p.Stock,
+			&p.IsActive,
+			&p.CreatedAt,
+			&p.UpdatedAt,
+		)
+		if err != nil {
+			return nil, ce.NewError(
+				ce.CodeInternal,
+				ce.MsgInternalServer,
+				fmt.Errorf("failed to get all products by skus for update: %w", err),
+			)
+		}
+
+		ps = append(ps, p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to get all products by skus for update: %w", err),
+		)
+	}
+
+	return ps, nil
 }
 
 func (r *productRepository) Update(ctx context.Context, productID int, data *models.UpdateProduct) (*models.Product, *ce.Error) {
