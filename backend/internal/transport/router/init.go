@@ -61,6 +61,11 @@ func Init(
 	order := api.Group("/orders")
 	{
 		order.POST("", oh.Create)
+
+		id := order.Group("/:id")
+		{
+			id.GET("", oh.GetByID)
+		}
 	}
 
 	return &Router{router: r}

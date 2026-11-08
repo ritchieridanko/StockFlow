@@ -17,6 +17,7 @@ import (
 
 type OrderUsecase interface {
 	CreateOrder(ctx context.Context, req *models.CreateOrderReq) (o *models.Order, err *ce.Error)
+	GetOrderByID(ctx context.Context, orderID int) (o *models.Order, err *ce.Error)
 }
 
 type orderUsecase struct {
@@ -174,5 +175,23 @@ func (u *orderUsecase) CreateOrder(ctx context.Context, req *models.CreateOrderR
 		return nil, err
 	}
 
+	return o, nil
+}
+
+func (u *orderUsecase) GetOrderByID(ctx context.Context, orderID int) (*models.Order, *ce.Error) {
+	ctx, span := u.tracer.Start(ctx, "order.get_by_id")
+	defer span.End()
+
+	o, err := u.or.GetByID(ctx, orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	ois, err := u.oir.GetAll(ctx, orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	o.Items = ois
 	return o, nil
 }

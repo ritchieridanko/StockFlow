@@ -58,7 +58,9 @@ func (e *Error) ToHTTPErrCode() int {
 		CodeInvalidParam,
 		CodeInvalidPayload:
 		return http.StatusBadRequest
-	case CodeProductNotFound:
+	case
+		CodeOrderNotFound,
+		CodeProductNotFound:
 		return http.StatusNotFound
 	case
 		CodeInsufficientStock,

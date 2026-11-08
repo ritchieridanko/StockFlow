@@ -12,6 +12,7 @@ import (
 
 type OrderItemRepository interface {
 	CreateMany(ctx context.Context, data *models.CreateOrderItems) (ois []models.OrderItem, err *ce.Error)
+	GetAll(ctx context.Context, orderID int) (ois []models.OrderItem, err *ce.Error)
 }
 
 type orderItemRepository struct {
@@ -103,6 +104,63 @@ func (r *orderItemRepository) CreateMany(ctx context.Context, data *models.Creat
 			ce.CodeInternal,
 			ce.MsgInternalServer,
 			fmt.Errorf("failed to create order items: %w", err),
+		)
+	}
+
+	return ois, nil
+}
+
+func (r *orderItemRepository) GetAll(ctx context.Context, orderID int) ([]models.OrderItem, *ce.Error) {
+	query := `
+		SELECT
+			id, order_id, sku, qty,
+			unit_price, created_at, updated_at
+		FROM
+			sales_order_items
+		WHERE
+			order_id = $1
+	`
+
+	rows, err := r.database.QueryAll(
+		ctx, query,
+		orderID,
+	)
+	if err != nil {
+		return nil, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to get all order items: %w", err),
+		)
+	}
+	defer rows.Close()
+
+	ois := make([]models.OrderItem, 0)
+	for rows.Next() {
+		var oi models.OrderItem
+		err := rows.Scan(
+			&oi.ID,
+			&oi.OrderID,
+			&oi.SKU,
+			&oi.Quantity,
+			&oi.UnitPrice,
+			&oi.CreatedAt,
+			&oi.UpdatedAt,
+		)
+		if err != nil {
+			return nil, ce.NewError(
+				ce.CodeInternal,
+				ce.MsgInternalServer,
+				fmt.Errorf("failed to get all order items: %w", err),
+			)
+		}
+
+		ois = append(ois, oi)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to get all order items: %w", err),
 		)
 	}
 

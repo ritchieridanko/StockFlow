@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ritchieridanko/stockflow/backend/internal/models"
@@ -55,6 +56,38 @@ func (h *OrderHandler) Create(ctx *gin.Context) {
 		http.StatusCreated,
 		"Order created successfully",
 		dtos.CreateOrderResponse{
+			Order: h.toOrder(o),
+		},
+	)
+}
+
+func (h *OrderHandler) GetByID(ctx *gin.Context) {
+	orderID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ce.NewError(
+			ce.CodeInvalidParam,
+			ce.MsgInvalidParam,
+			fmt.Errorf("failed to convert url param: %w", err),
+		).Bind(
+			ctx,
+		)
+		return
+	}
+
+	o, getErr := h.ou.GetOrderByID(
+		ctx.Request.Context(),
+		orderID,
+	)
+	if getErr != nil {
+		getErr.Bind(ctx)
+		return
+	}
+
+	utils.SetResponse(
+		ctx,
+		http.StatusOK,
+		"Order retrieved successfully",
+		dtos.GetOrderByIDResponse{
 			Order: h.toOrder(o),
 		},
 	)
