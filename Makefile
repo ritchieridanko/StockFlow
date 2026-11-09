@@ -28,4 +28,3 @@ docker-migrator-down:
 docker-start:
 	make docker-build
 	make docker-up
-	make docker-migrator-up

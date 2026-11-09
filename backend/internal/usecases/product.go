@@ -16,6 +16,7 @@ import (
 
 type ProductUsecase interface {
 	CreateProduct(ctx context.Context, req *models.CreateProductReq) (p *models.Product, err *ce.Error)
+	GetAllProducts(ctx context.Context, req *models.GetAllProductsReq) (plis []models.ProductListItem, total int64, err *ce.Error)
 	GetAllProductStockMovements(ctx context.Context, productID int) (sms []models.StockMovement, err *ce.Error)
 	UpdateProduct(ctx context.Context, req *models.UpdateProductReq) (p *models.Product, err *ce.Error)
 	UpdateStock(ctx context.Context, req *models.UpdateStockReq) (p *models.Product, err *ce.Error)
@@ -72,6 +73,42 @@ func (u *productUsecase) CreateProduct(ctx context.Context, req *models.CreatePr
 			SKU:   sku,
 			Name:  name,
 			Price: req.Price,
+		},
+	)
+}
+
+func (u *productUsecase) GetAllProducts(ctx context.Context, req *models.GetAllProductsReq) ([]models.ProductListItem, int64, *ce.Error) {
+	ctx, span := u.tracer.Start(ctx, "product.get_all")
+	defer span.End()
+
+	// Data Normalization
+	search := utils.TrimSpacePtr(req.Search)
+
+	// Data Validation
+	page := req.Page
+	size := req.Size
+	if page < 1 {
+		page = 1
+	}
+	if size < 1 || size > 100 {
+		size = 10
+	}
+	if search != nil {
+		if ok, why := u.validator.Search(*search); !ok {
+			return nil, 0, ce.NewError(ce.CodeInvalidParam, why, nil)
+		}
+	}
+
+	// All Products Fetching
+	return u.pr.GetAll(
+		ctx,
+		&models.GetAllProducts{
+			Search: search,
+
+			Pagination: models.Pagination{
+				Page: page,
+				Size: size,
+			},
 		},
 	)
 }

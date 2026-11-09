@@ -43,6 +43,14 @@ func (v *Validator) Quantity(value int) (bool, string) {
 	return true, ""
 }
 
+func (v *Validator) Search(value string) (bool, string) {
+	length := utf8.RuneCountInString(value)
+	if length < searchMinLength {
+		return false, "Search keyword is invalid"
+	}
+	return true, ""
+}
+
 func (v *Validator) SKU(value string) (bool, string) {
 	length := utf8.RuneCountInString(value)
 	if length < skuMinLength {

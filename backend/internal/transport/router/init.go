@@ -47,6 +47,7 @@ func Init(
 	product := api.Group("/products")
 	{
 		product.POST("", ph.CreateProduct)
+		product.GET("", ph.GetAllProducts)
 
 		id := product.Group("/:id")
 		{

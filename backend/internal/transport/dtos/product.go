@@ -15,6 +15,21 @@ type Product struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type ProductListItem struct {
+	ID int `json:"id"`
+
+	SKU      string `json:"sku"`
+	Name     string `json:"name"`
+	Price    int    `json:"price"`
+	Stock    int    `json:"stock"`
+	IsActive bool   `json:"is_active"`
+
+	LastMovementAt *string `json:"last_movement_at"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type StockMovement struct {
 	ID        int `json:"id"`
 	ProductID int `json:"product_id"`
@@ -34,6 +49,14 @@ type (
 		Price int    `json:"price" binding:"required"`
 	}
 
+	GetAllProductsRequest struct {
+		// Queries
+		Search *string `form:"search"`
+
+		// Pagination
+		PaginationParams
+	}
+
 	UpdateProductRequest struct {
 		SKU   *string `json:"sku"`
 		Name  *string `json:"name"`
@@ -50,6 +73,10 @@ type (
 type (
 	CreateProductResponse struct {
 		Product *Product `json:"product,omitempty"`
+	}
+
+	GetAllProductsResponse struct {
+		Products []ProductListItem `json:"products"`
 	}
 
 	GetAllProductStockMovementsResponse struct {

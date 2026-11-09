@@ -58,6 +58,7 @@ func (h *OrderHandler) Create(ctx *gin.Context) {
 		dtos.CreateOrderResponse{
 			Order: h.toOrder(o),
 		},
+		nil,
 	)
 }
 
@@ -90,6 +91,7 @@ func (h *OrderHandler) GetByID(ctx *gin.Context) {
 		dtos.GetOrderByIDResponse{
 			Order: h.toOrder(o),
 		},
+		nil,
 	)
 }
 
@@ -122,6 +124,7 @@ func (h *OrderHandler) Cancel(ctx *gin.Context) {
 		dtos.CancelOrderResponse{
 			Order: h.toOrder(o),
 		},
+		nil,
 	)
 }
 

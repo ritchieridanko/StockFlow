@@ -7,6 +7,14 @@ type (
 		Price int
 	}
 
+	GetAllProductsReq struct {
+		// Queries
+		Search *string
+
+		// Pagination
+		Pagination
+	}
+
 	UpdateProductReq struct {
 		// Params
 		ProductID int

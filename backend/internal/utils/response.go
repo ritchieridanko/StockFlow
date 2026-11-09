@@ -8,10 +8,11 @@ import (
 
 type (
 	response[T any] struct {
-		Status   int      `json:"status"`
-		Message  string   `json:"message"`
-		Data     T        `json:"data,omitempty"`
-		Metadata metadata `json:"metadata"`
+		Status     int         `json:"status"`
+		Message    string      `json:"message"`
+		Data       T           `json:"data,omitempty"`
+		Metadata   metadata    `json:"metadata"`
+		Pagination *Pagination `json:"pagination,omitempty"`
 	}
 
 	errResponse struct {
@@ -25,13 +26,19 @@ type (
 		Timestamp time.Time `json:"timestamp"`
 	}
 
+	Pagination struct {
+		Page  int   `json:"page"`
+		Limit int   `json:"limit"`
+		Total int64 `json:"total"`
+	}
+
 	err struct {
 		Code    string `json:"code"`
 		Message string `json:"message"`
 	}
 )
 
-func SetResponse[T any](ctx *gin.Context, status int, message string, data T) {
+func SetResponse[T any](ctx *gin.Context, status int, message string, data T, p *Pagination) {
 	ctx.JSON(
 		status,
 		response[T]{
@@ -42,6 +49,7 @@ func SetResponse[T any](ctx *gin.Context, status int, message string, data T) {
 				RequestID: CtxRequestID(ctx.Request.Context()),
 				Timestamp: time.Now().UTC(),
 			},
+			Pagination: p,
 		},
 	)
 }

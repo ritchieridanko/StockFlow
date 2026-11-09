@@ -54,6 +54,56 @@ func (h *ProductHandler) CreateProduct(ctx *gin.Context) {
 		dtos.CreateProductResponse{
 			Product: h.toProduct(p),
 		},
+		nil,
+	)
+}
+
+func (h *ProductHandler) GetAllProducts(ctx *gin.Context) {
+	var params dtos.GetAllProductsRequest
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		ce.NewError(
+			ce.CodeInvalidParam,
+			ce.MsgInvalidParam,
+			fmt.Errorf("failed to bind query params: %w", err),
+		).Bind(
+			ctx,
+		)
+		return
+	}
+
+	plis, total, err := h.pu.GetAllProducts(
+		ctx.Request.Context(),
+		&models.GetAllProductsReq{
+			Search: params.Search,
+
+			Pagination: models.Pagination{
+				Page: params.Page,
+				Size: params.Limit,
+			},
+		},
+	)
+	if err != nil {
+		err.Bind(ctx)
+		return
+	}
+
+	products := make([]dtos.ProductListItem, 0, params.Limit)
+	for _, pli := range plis {
+		products = append(products, *h.toProductListItem(&pli))
+	}
+
+	utils.SetResponse(
+		ctx,
+		http.StatusOK,
+		"Products retrieved successfully",
+		dtos.GetAllProductsResponse{
+			Products: products,
+		},
+		&utils.Pagination{
+			Page:  params.Page,
+			Limit: params.Limit,
+			Total: total,
+		},
 	)
 }
 
@@ -91,6 +141,7 @@ func (h *ProductHandler) GetAllProductStockMovements(ctx *gin.Context) {
 		dtos.GetAllProductStockMovementsResponse{
 			StockMovements: movements,
 		},
+		nil,
 	)
 }
 
@@ -141,6 +192,7 @@ func (h *ProductHandler) UpdateProduct(ctx *gin.Context) {
 		dtos.UpdateProductResponse{
 			Product: h.toProduct(p),
 		},
+		nil,
 	)
 }
 
@@ -191,6 +243,7 @@ func (h *ProductHandler) UpdateStock(ctx *gin.Context) {
 		dtos.UpdateStockResponse{
 			Product: h.toProduct(p),
 		},
+		nil,
 	)
 }
 
@@ -216,7 +269,7 @@ func (h *ProductHandler) DeleteProduct(ctx *gin.Context) {
 		return
 	}
 
-	utils.SetResponse[any](ctx, http.StatusNoContent, "", nil)
+	utils.SetResponse[any](ctx, http.StatusNoContent, "", nil, nil)
 }
 
 func (h *ProductHandler) toProduct(p *models.Product) *dtos.Product {
@@ -234,6 +287,26 @@ func (h *ProductHandler) toProduct(p *models.Product) *dtos.Product {
 
 		CreatedAt: p.CreatedAt,
 		UpdatedAt: p.UpdatedAt,
+	}
+}
+
+func (h *ProductHandler) toProductListItem(pli *models.ProductListItem) *dtos.ProductListItem {
+	if pli == nil {
+		return nil
+	}
+	return &dtos.ProductListItem{
+		ID: pli.ID,
+
+		SKU:      pli.SKU,
+		Name:     pli.Name,
+		Price:    pli.Price,
+		Stock:    pli.Stock,
+		IsActive: pli.IsActive,
+
+		LastMovementAt: pli.LastMovementAt,
+
+		CreatedAt: pli.CreatedAt,
+		UpdatedAt: pli.UpdatedAt,
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/ritchieridanko/stockflow/backend/internal/infra/database"
@@ -16,6 +17,7 @@ import (
 type ProductRepository interface {
 	Create(ctx context.Context, data *models.CreateProduct) (p *models.Product, err *ce.Error)
 	GetStock(ctx context.Context, productID int) (stock int, err *ce.Error)
+	GetAll(ctx context.Context, params *models.GetAllProducts) (plis []models.ProductListItem, total int64, err *ce.Error)
 	GetAllBySKUsForUpdate(ctx context.Context, skus []string) (ps []models.Product, err *ce.Error)
 	Update(ctx context.Context, productID int, data *models.UpdateProduct) (p *models.Product, err *ce.Error)
 	UpdateStock(ctx context.Context, productID, stockDiff int) (p *models.Product, err *ce.Error)
@@ -110,6 +112,102 @@ func (r *productRepository) GetStock(ctx context.Context, productID int) (int, *
 	}
 
 	return stock, nil
+}
+
+func (r *productRepository) GetAll(ctx context.Context, params *models.GetAllProducts) ([]models.ProductListItem, int64, *ce.Error) {
+	query := ""
+	args := []any{}
+	argPos := 1
+
+	query += `
+		SELECT
+			p.id, p.sku, p.name, p.price, p.stock,
+			p.is_active, p.created_at, p.updated_at,
+			MAX(sm.created_at) AS last_movement_at,
+
+			COUNT(*) OVER() AS total
+		FROM
+			products p
+		LEFT JOIN
+			stock_movements sm
+			ON
+				p.id = sm.product_id
+	`
+
+	searchArgPos := argPos
+	if params.Search != nil {
+		query += " WHERE p.sku <% $" + strconv.Itoa(argPos) + " OR p.name <% $" + strconv.Itoa(argPos)
+		args = append(args, *params.Search)
+		argPos++
+	}
+
+	query += " GROUP BY p.id"
+	sortClauses := []string{"last_movement_at DESC NULLS LAST"}
+	if params.Search != nil {
+		sortClauses = append(
+			sortClauses,
+			"GREATEST(WORD_SIMILARITY(p.sku, $"+strconv.Itoa(searchArgPos)+"), WORD_SIMILARITY(p.name, $"+strconv.Itoa(searchArgPos)+")) DESC",
+		)
+	}
+
+	query += " ORDER BY " + strings.Join(sortClauses, ", ")
+	query += " LIMIT $" + strconv.Itoa(argPos) + " OFFSET $" + strconv.Itoa(argPos+1)
+	args = append(args, params.Size, params.Offset())
+
+	rows, err := r.database.QueryAll(
+		ctx, query,
+		args...,
+	)
+	if err != nil {
+		return nil, 0, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to get all products: %w", err),
+		)
+	}
+	defer rows.Close()
+
+	var total int64
+	plis := make([]models.ProductListItem, 0, params.Size)
+	for rows.Next() {
+		var pli models.ProductListItem
+		var lastMovementAt *time.Time
+
+		err := rows.Scan(
+			&pli.ID,
+			&pli.SKU,
+			&pli.Name,
+			&pli.Price,
+			&pli.Stock,
+			&pli.IsActive,
+			&pli.CreatedAt,
+			&pli.UpdatedAt,
+			&lastMovementAt,
+			&total,
+		)
+		if err != nil {
+			return nil, 0, ce.NewError(
+				ce.CodeInternal,
+				ce.MsgInternalServer,
+				fmt.Errorf("failed to get all products: %w", err),
+			)
+		}
+		if lastMovementAt != nil {
+			isoStr := lastMovementAt.UTC().Format(time.RFC3339)
+			pli.LastMovementAt = &isoStr
+		}
+
+		plis = append(plis, pli)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to get all products: %w", err),
+		)
+	}
+
+	return plis, total, nil
 }
 
 func (r *productRepository) GetAllBySKUsForUpdate(ctx context.Context, skus []string) ([]models.Product, *ce.Error) {
