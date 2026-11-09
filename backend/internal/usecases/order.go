@@ -18,6 +18,7 @@ import (
 type OrderUsecase interface {
 	CreateOrder(ctx context.Context, req *models.CreateOrderReq) (o *models.Order, err *ce.Error)
 	GetOrderByID(ctx context.Context, orderID int) (o *models.Order, err *ce.Error)
+	CancelOrder(ctx context.Context, orderID int) (o *models.Order, err *ce.Error)
 }
 
 type orderUsecase struct {
@@ -59,12 +60,14 @@ func (u *orderUsecase) CreateOrder(ctx context.Context, req *models.CreateOrderR
 	if ok, why := u.validator.Customer(customer); !ok {
 		return nil, ce.NewError(ce.CodeInvalidPayload, why, nil)
 	}
-	if len(req.Items) == 0 {
+
+	totalItems := len(req.Items)
+	if totalItems == 0 {
 		return nil, ce.NewError(ce.CodeInvalidPayload, ce.MsgEmptyOrderItems, nil)
 	}
 
-	skuSet := make(map[string]bool)
-	skus := make([]string, 0, len(req.Items))
+	skuMap := make(map[string]bool)
+	skus := make([]string, 0, totalItems)
 	for _, item := range req.Items {
 		sku := strings.TrimSpace(item.SKU)
 
@@ -74,11 +77,11 @@ func (u *orderUsecase) CreateOrder(ctx context.Context, req *models.CreateOrderR
 		if ok, why := u.validator.Quantity(item.Quantity); !ok {
 			return nil, ce.NewError(ce.CodeInvalidPayload, why, nil)
 		}
-		if skuSet[sku] {
+		if skuMap[sku] {
 			return nil, ce.NewError(ce.CodeInvalidPayload, "Duplicate SKU in order: "+sku, nil)
 		}
 
-		skuSet[sku] = true
+		skuMap[sku] = true
 		skus = append(skus, sku)
 	}
 	sort.Strings(skus)
@@ -96,11 +99,10 @@ func (u *orderUsecase) CreateOrder(ctx context.Context, req *models.CreateOrderR
 			productMap[p.SKU] = p
 		}
 
-		// Stock Availability Validation
 		total := 0
-		orderItems := make([]models.CreateOrderItem, 0, len(req.Items))
-
+		orderItems := make([]models.CreateOrderItem, 0, totalItems)
 		for _, item := range req.Items {
+			// Stock Availability Validation
 			p, exists := productMap[item.SKU]
 			if !exists {
 				return ce.NewError(ce.CodeInvalidPayload, "Product with SKU not found: "+item.SKU, nil)
@@ -109,6 +111,7 @@ func (u *orderUsecase) CreateOrder(ctx context.Context, req *models.CreateOrderR
 				return ce.NewError(ce.CodeInsufficientStock, "Insufficient stock for SKU: "+item.SKU, nil)
 			}
 
+			// Total Price Calculation
 			total += p.Price * item.Quantity
 			orderItems = append(orderItems,
 				models.CreateOrderItem{
@@ -182,16 +185,97 @@ func (u *orderUsecase) GetOrderByID(ctx context.Context, orderID int) (*models.O
 	ctx, span := u.tracer.Start(ctx, "order.get_by_id")
 	defer span.End()
 
+	// Order Fetching
 	o, err := u.or.GetByID(ctx, orderID)
 	if err != nil {
 		return nil, err
 	}
 
+	// All Order Items Fetching
 	ois, err := u.oir.GetAll(ctx, orderID)
 	if err != nil {
 		return nil, err
 	}
 
 	o.Items = ois
+	return o, nil
+}
+
+func (u *orderUsecase) CancelOrder(ctx context.Context, orderID int) (*models.Order, *ce.Error) {
+	ctx, span := u.tracer.Start(ctx, "order.cancel")
+	defer span.End()
+
+	var o *models.Order
+	err := u.transactor.WithTx(ctx, func(ctx context.Context) *ce.Error {
+		// Order Fetching
+		order, err := u.or.GetByID(ctx, orderID)
+		if err != nil {
+			return err
+		}
+		if order.Status == constants.OrderStatusCancelled {
+			return ce.NewError(ce.CodeOrderAlreadyCancelled, ce.MsgOrderAlreadyCancelled, nil)
+		}
+
+		// Order Cancellation
+		o, err = u.or.Cancel(ctx, orderID)
+		if err != nil {
+			return err
+		}
+
+		// All Order Items Fetching
+		ois, err := u.oir.GetAll(ctx, o.ID)
+		if err != nil {
+			return err
+		}
+
+		quantityMap := make(map[string]int, len(ois))
+		skus := make([]string, 0, len(ois))
+		for _, oi := range ois {
+			quantityMap[oi.SKU] = oi.Quantity
+			skus = append(skus, oi.SKU)
+		}
+		sort.Strings(skus)
+
+		// All Products Fetching By SKUs
+		ps, err := u.pr.GetAllBySKUsForUpdate(ctx, skus)
+		if err != nil {
+			return err
+		}
+
+		productMap := make(map[string]models.Product, len(ps))
+		for _, p := range ps {
+			productMap[p.SKU] = p
+		}
+		for _, oi := range ois {
+			p := productMap[oi.SKU]
+			note := "Cancellation of Order #" + strconv.Itoa(o.ID)
+
+			// Stock Movement Creation
+			_, err := u.smr.Create(
+				ctx,
+				&models.CreateStockMovement{
+					ProductID:  p.ID,
+					UpdateType: constants.StockUpdateTypeIn,
+					Quantity:   oi.Quantity,
+					Note:       &note,
+				},
+			)
+			if err != nil {
+				return err
+			}
+
+			// Product Stock Update
+			_, err = u.pr.UpdateStock(ctx, p.ID, oi.Quantity)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return o, nil
 }

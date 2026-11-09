@@ -93,6 +93,38 @@ func (h *OrderHandler) GetByID(ctx *gin.Context) {
 	)
 }
 
+func (h *OrderHandler) Cancel(ctx *gin.Context) {
+	orderID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ce.NewError(
+			ce.CodeInvalidParam,
+			ce.MsgInvalidParam,
+			fmt.Errorf("failed to convert url param: %w", err),
+		).Bind(
+			ctx,
+		)
+		return
+	}
+
+	o, cnclErr := h.ou.CancelOrder(
+		ctx.Request.Context(),
+		orderID,
+	)
+	if cnclErr != nil {
+		cnclErr.Bind(ctx)
+		return
+	}
+
+	utils.SetResponse(
+		ctx,
+		http.StatusOK,
+		"Order cancelled successfully",
+		dtos.CancelOrderResponse{
+			Order: h.toOrder(o),
+		},
+	)
+}
+
 func (h *OrderHandler) toOrder(o *models.Order) *dtos.Order {
 	if o == nil {
 		return nil

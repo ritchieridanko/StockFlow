@@ -48,4 +48,8 @@ type (
 	GetOrderByIDResponse struct {
 		Order *Order `json:"order,omitempty"`
 	}
+
+	CancelOrderResponse struct {
+		Order *Order `json:"order,omitempty"`
+	}
 )

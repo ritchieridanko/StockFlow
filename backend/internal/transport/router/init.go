@@ -65,6 +65,8 @@ func Init(
 		id := order.Group("/:id")
 		{
 			id.GET("", oh.GetByID)
+
+			id.POST("/cancel", oh.Cancel)
 		}
 	}
 
