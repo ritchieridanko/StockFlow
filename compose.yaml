@@ -42,6 +42,23 @@ services:
       interval: 10s
       retries: 3
 
+  stockflow-seeder:
+    image: stockflow-seeder
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.seeder
+    container_name: stockflow-seeder
+    networks:
+      - stockflow-net
+    restart: "no"
+    env_file:
+      - .env
+    depends_on:
+      stockflow-migrator:
+        condition: service_completed_successfully
+    entrypoint: ["./bin/seeder"]
+
   stockflow-backend:
     image: stockflow-backend
     platform: linux/amd64
@@ -62,6 +79,8 @@ services:
       stockflow-database:
         condition: service_healthy
       stockflow-migrator:
+        condition: service_completed_successfully
+      stockflow-seeder:
         condition: service_completed_successfully
       jaeger:
         condition: service_started

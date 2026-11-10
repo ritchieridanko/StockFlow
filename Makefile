@@ -7,6 +7,7 @@ help:
 	@echo " make docker-down                  Drop the services"
 	@echo " make docker-migrator-up           Apply all database up-migrations"
 	@echo " make docker-migrator-down         Apply all database down-migrations"
+	@echo " make docker-seeder                Apply all database seedings"
 	@echo " make docker-start                 Build and run up the services, and apply up-migrations"
 
 # ---------- DOCKER COMMANDS ----------
@@ -24,6 +25,9 @@ docker-migrator-up:
 
 docker-migrator-down:
 	docker compose run --rm stockflow-migrator -down 0
+
+docker-seeder:
+	docker compose run --rm stockflow-seeder
 
 docker-start:
 	make docker-build
