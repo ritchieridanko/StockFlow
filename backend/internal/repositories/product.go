@@ -206,6 +206,30 @@ func (r *productRepository) GetAll(ctx context.Context, params *models.GetAllPro
 			fmt.Errorf("failed to get all products: %w", err),
 		)
 	}
+	if len(plis) == 0 {
+		countQuery := "SELECT COUNT(*) FROM products"
+		countArgs := []any{}
+		countArgPos := 1
+		if params.Search != nil {
+			countQuery += " WHERE sku <% $" + strconv.Itoa(countArgPos) + " OR name <% $" + strconv.Itoa(countArgPos)
+			countArgs = append(countArgs, *params.Search)
+			countArgPos++
+		}
+
+		err := r.database.QueryOne(
+			ctx, countQuery,
+			countArgs...,
+		).Scan(
+			&total,
+		)
+		if err != nil {
+			return nil, 0, ce.NewError(
+				ce.CodeInternal,
+				ce.MsgInternalServer,
+				fmt.Errorf("failed to get total products count: %w", err),
+			)
+		}
+	}
 
 	return plis, total, nil
 }

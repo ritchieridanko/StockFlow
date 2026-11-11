@@ -55,9 +55,7 @@ func (h *OrderHandler) Create(ctx *gin.Context) {
 		ctx,
 		http.StatusCreated,
 		"Order created successfully",
-		dtos.CreateOrderResponse{
-			Order: h.toOrder(o),
-		},
+		h.toOrder(o),
 		nil,
 	)
 }
@@ -88,9 +86,7 @@ func (h *OrderHandler) GetByID(ctx *gin.Context) {
 		ctx,
 		http.StatusOK,
 		"Order retrieved successfully",
-		dtos.GetOrderByIDResponse{
-			Order: h.toOrder(o),
-		},
+		h.toOrder(o),
 		nil,
 	)
 }
@@ -121,9 +117,7 @@ func (h *OrderHandler) Cancel(ctx *gin.Context) {
 		ctx,
 		http.StatusOK,
 		"Order cancelled successfully",
-		dtos.CancelOrderResponse{
-			Order: h.toOrder(o),
-		},
+		h.toOrder(o),
 		nil,
 	)
 }

@@ -39,17 +39,3 @@ type (
 		Items    []OrderItemRequest `json:"items"`
 	}
 )
-
-type (
-	CreateOrderResponse struct {
-		Order *Order `json:"order,omitempty"`
-	}
-
-	GetOrderByIDResponse struct {
-		Order *Order `json:"order,omitempty"`
-	}
-
-	CancelOrderResponse struct {
-		Order *Order `json:"order,omitempty"`
-	}
-)

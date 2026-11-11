@@ -51,9 +51,7 @@ func (h *ProductHandler) CreateProduct(ctx *gin.Context) {
 		ctx,
 		http.StatusCreated,
 		"Product created successfully",
-		dtos.CreateProductResponse{
-			Product: h.toProduct(p),
-		},
+		h.toProduct(p),
 		nil,
 	)
 }
@@ -96,9 +94,7 @@ func (h *ProductHandler) GetAllProducts(ctx *gin.Context) {
 		ctx,
 		http.StatusOK,
 		"Products retrieved successfully",
-		dtos.GetAllProductsResponse{
-			Products: products,
-		},
+		products,
 		&utils.Pagination{
 			Page:  params.Page,
 			Limit: params.Limit,
@@ -138,9 +134,7 @@ func (h *ProductHandler) GetAllProductStockMovements(ctx *gin.Context) {
 		ctx,
 		http.StatusOK,
 		"Stock movements retrieved successfully",
-		dtos.GetAllProductStockMovementsResponse{
-			StockMovements: movements,
-		},
+		movements,
 		nil,
 	)
 }
@@ -189,9 +183,7 @@ func (h *ProductHandler) UpdateProduct(ctx *gin.Context) {
 		ctx,
 		http.StatusOK,
 		"Product updated successfully",
-		dtos.UpdateProductResponse{
-			Product: h.toProduct(p),
-		},
+		h.toProduct(p),
 		nil,
 	)
 }
@@ -240,9 +232,7 @@ func (h *ProductHandler) UpdateStock(ctx *gin.Context) {
 		ctx,
 		http.StatusOK,
 		"Stock updated successfully",
-		dtos.UpdateStockResponse{
-			Product: h.toProduct(p),
-		},
+		h.toProduct(p),
 		nil,
 	)
 }

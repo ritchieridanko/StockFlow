@@ -69,25 +69,3 @@ type (
 		Note       *string `json:"note"`
 	}
 )
-
-type (
-	CreateProductResponse struct {
-		Product *Product `json:"product,omitempty"`
-	}
-
-	GetAllProductsResponse struct {
-		Products []ProductListItem `json:"products"`
-	}
-
-	GetAllProductStockMovementsResponse struct {
-		StockMovements []StockMovement `json:"stock_movements"`
-	}
-
-	UpdateProductResponse struct {
-		Product *Product `json:"product,omitempty"`
-	}
-
-	UpdateStockResponse struct {
-		Product *Product `json:"product,omitempty"`
-	}
-)
