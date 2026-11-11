@@ -27,13 +27,13 @@ func NewStockMovementRepository(db *database.Database) StockMovementRepository {
 func (r *stockMovementRepository) Create(ctx context.Context, data *models.CreateStockMovement) (*models.StockMovement, *ce.Error) {
 	query := `
 		INSERT INTO stock_movements (
-			product_id, type, qty, note
+			product_id, type, quantity, note
 		)
 		VALUES (
 			$1, $2, $3, $4
 		)
 		RETURNING
-			id, product_id, type, qty,
+			id, product_id, type, quantity,
 			note, created_at, updated_at
 	`
 
@@ -67,7 +67,7 @@ func (r *stockMovementRepository) Create(ctx context.Context, data *models.Creat
 func (r *stockMovementRepository) GetAllByProductID(ctx context.Context, productID int) ([]models.StockMovement, *ce.Error) {
 	query := `
 		SELECT
-			id, product_id, type, qty,
+			id, product_id, type, quantity,
 			note, created_at, updated_at
 		FROM
 			stock_movements

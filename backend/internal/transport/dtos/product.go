@@ -35,7 +35,7 @@ type StockMovement struct {
 	ProductID int `json:"product_id"`
 
 	UpdateType string  `json:"type"`
-	Quantity   int     `json:"qty"`
+	Quantity   int     `json:"quantity"`
 	Note       *string `json:"note"`
 
 	CreatedAt time.Time `json:"created_at"`
@@ -65,7 +65,7 @@ type (
 
 	UpdateStockRequest struct {
 		UpdateType string  `json:"type" binding:"required"`
-		Quantity   int     `json:"qty" binding:"required"`
+		Quantity   int     `json:"quantity" binding:"required"`
 		Note       *string `json:"note"`
 	}
 )

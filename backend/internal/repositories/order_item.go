@@ -53,12 +53,12 @@ func (r *orderItemRepository) CreateMany(ctx context.Context, data *models.Creat
 	query := fmt.Sprintf(
 		`
 			INSERT INTO sales_order_items (
-				order_id, sku, qty, unit_price
+				order_id, sku, quantity, unit_price
 			)
 			VALUES
 				%s
 			RETURNING
-				id, order_id, sku, qty,
+				id, order_id, sku, quantity,
 				unit_price, created_at, updated_at
 		`,
 		strings.Join(valClauses, ", "),
@@ -113,7 +113,7 @@ func (r *orderItemRepository) CreateMany(ctx context.Context, data *models.Creat
 func (r *orderItemRepository) GetAll(ctx context.Context, orderID int) ([]models.OrderItem, *ce.Error) {
 	query := `
 		SELECT
-			id, order_id, sku, qty,
+			id, order_id, sku, quantity,
 			unit_price, created_at, updated_at
 		FROM
 			sales_order_items

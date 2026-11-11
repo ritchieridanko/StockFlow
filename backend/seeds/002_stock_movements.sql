@@ -1,5 +1,5 @@
 INSERT INTO
-  stock_movements (product_id, type, qty, note)
+  stock_movements (product_id, type, quantity, note)
 VALUES
   (1, 'in', 15, 'Initial stock'),
   (2, 'in', 25, 'Initial stock'),

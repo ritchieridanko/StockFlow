@@ -3,7 +3,7 @@ CREATE TABLE sales_order_items (
   order_id INT NOT NULL,
 
   sku TEXT NOT NULL,
-  qty INT NOT NULL CHECK (qty > 0),
+  quantity INT NOT NULL CHECK (quantity > 0),
   unit_price INT NOT NULL,
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

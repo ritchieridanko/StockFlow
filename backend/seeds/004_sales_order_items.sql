@@ -1,5 +1,5 @@
 INSERT INTO
-  sales_order_items (order_id, sku, qty, unit_price)
+  sales_order_items (order_id, sku, quantity, unit_price)
 VALUES
   (1, 'SEED-001', 1, 12500000),
   (1, 'SEED-002', 1, 3200000),

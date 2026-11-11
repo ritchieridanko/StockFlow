@@ -76,7 +76,7 @@ func (h *ProductHandler) GetAllProducts(ctx *gin.Context) {
 
 			Pagination: models.Pagination{
 				Page: params.Page,
-				Size: params.Limit,
+				Size: params.Size,
 			},
 		},
 	)
@@ -85,7 +85,7 @@ func (h *ProductHandler) GetAllProducts(ctx *gin.Context) {
 		return
 	}
 
-	products := make([]dtos.ProductListItem, 0, params.Limit)
+	products := make([]dtos.ProductListItem, 0, params.Size)
 	for _, pli := range plis {
 		products = append(products, *h.toProductListItem(&pli))
 	}
@@ -97,7 +97,7 @@ func (h *ProductHandler) GetAllProducts(ctx *gin.Context) {
 		products,
 		&utils.Pagination{
 			Page:  params.Page,
-			Limit: params.Limit,
+			Size:  params.Size,
 			Total: total,
 		},
 	)

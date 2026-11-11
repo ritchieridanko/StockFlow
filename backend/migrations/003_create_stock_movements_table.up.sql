@@ -3,7 +3,7 @@ CREATE TABLE stock_movements (
   product_id INT NOT NULL,
 
   type TEXT NOT NULL CHECK (type IN ('in', 'out')),
-  qty INT NOT NULL CHECK (qty > 0),
+  quantity INT NOT NULL CHECK (quantity > 0),
   note TEXT,
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
