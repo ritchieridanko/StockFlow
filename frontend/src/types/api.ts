@@ -7,7 +7,7 @@ interface Metadata {
 
 interface Pagination {
   page: number;
-  limit: number;
+  size: number;
   total: number;
 }
 
@@ -59,7 +59,7 @@ export interface StockMovement {
   id: number;
   product_id: number;
   type: StockMovementType;
-  qty: number;
+  quantity: number;
   note?: string;
   created_at: string;
   updated_at: string;
@@ -101,7 +101,7 @@ export interface CreateProductPayload {
 export interface GetAllProductsParams {
   search?: string;
   page: number;
-  limit: number;
+  size: number;
 }
 
 export interface UpdateProductPayload {
@@ -112,6 +112,6 @@ export interface UpdateProductPayload {
 
 export interface UpdateStockPayload {
   type: string;
-  qty: number;
+  quantity: number;
   note?: string;
 }

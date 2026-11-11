@@ -6,7 +6,7 @@ import { COLORS } from "../constants";
 import type { APIResponse, Product, ProductListItem } from "../types";
 import { isAPIErrResponse } from "../utils";
 
-export const useFetchAllProducts = (page: number, limit: number) => {
+export const useFetchAllProducts = (page: number, size: number) => {
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -17,8 +17,9 @@ export const useFetchAllProducts = (page: number, limit: number) => {
     try {
       const data: APIResponse<ProductListItem[]> = await productApi.getAll({
         page: page,
-        limit: limit,
+        size: size,
       });
+
       setProducts(data.data);
       setTotal(data.pagination?.total ?? 0);
     } catch (err: unknown) {
@@ -47,7 +48,7 @@ export const useFetchAllProducts = (page: number, limit: number) => {
     } finally {
       setLoading(false);
     }
-  }, [page, limit]);
+  }, [page, size]);
 
   useEffect(() => {
     fetchAllProducts();
@@ -70,7 +71,7 @@ export const useFetchAllProducts = (page: number, limit: number) => {
   };
 
   const remove = (id: number) => {
-    setProducts((prev) => prev.filter((b) => b.id !== id));
+    setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
   return {
