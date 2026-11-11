@@ -1,4 +1,5 @@
+import { useCreateProduct } from "./useCreateProduct";
 import { useDeleteProduct } from "./useDeleteProduct";
 import { useFetchAllProducts } from "./useFetchAllProducts";
 
-export { useDeleteProduct, useFetchAllProducts };
+export { useCreateProduct, useDeleteProduct, useFetchAllProducts };

@@ -5,15 +5,15 @@ import type { ProductListItem } from "../types";
 interface DeleteProductModalProps {
   isVisible: boolean;
   product: ProductListItem | null;
-  onClickCancel: () => void;
   onClickDelete: () => void;
+  onClickCancel: () => void;
 }
 
 const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
   isVisible,
   product,
-  onClickCancel,
   onClickDelete,
+  onClickCancel,
 }: DeleteProductModalProps) => {
   if (!isVisible) return null;
 
