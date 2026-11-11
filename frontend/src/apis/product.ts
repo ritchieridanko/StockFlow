@@ -22,7 +22,7 @@ export const productApi = {
     params: GetAllProductsParams,
   ): Promise<APIResponse<ProductListItem[]>> => {
     const res = await client.get<APIResponse<ProductListItem[]>>(
-      `/products?page=${params.page}&limit=${params.limit}${params.search && `&search=${params.search}`}`,
+      `/products?page=${encodeURIComponent(params.page)}&limit=${encodeURIComponent(params.limit)}${params.search ? `&search=${encodeURIComponent(params.search)}` : ""}`,
     );
     return res.data;
   },

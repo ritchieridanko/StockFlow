@@ -1,4 +1,5 @@
 import type {
+  APIErrResponse,
   APIResponse,
   CreateOrderPayload,
   CreateProductPayload,
@@ -14,6 +15,7 @@ import type {
 import type { StockMovementType } from "./stock_movement";
 
 export type {
+  APIErrResponse,
   APIResponse,
   CreateOrderPayload,
   CreateProductPayload,

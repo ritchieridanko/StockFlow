@@ -73,6 +73,15 @@ export interface APIResponse<T> {
   pagination?: Pagination;
 }
 
+export interface APIErrResponse {
+  status: number;
+  error: {
+    code: string;
+    message: string;
+  };
+  metadata: Metadata;
+}
+
 interface OrderItemPayload {
   sku: string;
   quantity: number;
