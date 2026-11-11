@@ -70,6 +70,26 @@ export const useFetchAllProducts = (page: number, size: number) => {
     ]);
   };
 
+  const replace = (product: Product, last_movement_at?: string) => {
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === product.id
+          ? {
+              id: product.id,
+              sku: product.sku,
+              name: product.name,
+              price: product.price,
+              stock: product.stock,
+              is_active: product.is_active,
+              last_movement_at: last_movement_at,
+              created_at: product.created_at,
+              updated_at: product.updated_at,
+            }
+          : p,
+      ),
+    );
+  };
+
   const remove = (id: number) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
   };
@@ -80,6 +100,7 @@ export const useFetchAllProducts = (page: number, size: number) => {
     loading,
     refetch: fetchAllProducts,
     append,
+    replace,
     remove,
   };
 };

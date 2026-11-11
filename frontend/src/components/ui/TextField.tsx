@@ -29,7 +29,7 @@ const TextField: React.FC<TextFieldProps> = ({
         font-sans font-normal text-blue-500 text-base
         transition-all duration-200 ease-in-out
         focus:bg-white focus:outline-blue-500
-        placeholder:font-sans placeholder:font-normal placeholder:text-gray-700 placeholder:text-base
+        placeholder:font-sans placeholder:font-normal placeholder:text-gray-500 placeholder:text-base
         
         ${value.length > 0 ? "bg-white outline-blue-500" : "bg-gray-200 outline-gray-200"}
       `}

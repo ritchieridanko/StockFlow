@@ -17,22 +17,6 @@ export const useCreateProduct = () => {
   const createProduct = useCallback(async () => {
     setLoading(true);
 
-    if (form.name === "" || form.sku === "") {
-      toast.error("All fields are required", {
-        id: "cp-form-err-toast",
-        duration: 5000,
-        style: {
-          background: COLORS.ERROR,
-          color: COLORS.LIGHT,
-        },
-        iconTheme: {
-          primary: COLORS.LIGHT,
-          secondary: COLORS.ERROR,
-        },
-      });
-      return;
-    }
-
     try {
       const data: APIResponse<Product> = await productApi.create(form);
 

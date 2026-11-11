@@ -1,5 +1,7 @@
 import React from "react";
+import toast from "react-hot-toast";
 
+import { COLORS } from "../constants";
 import { useCreateProduct } from "../hooks";
 import type { Product } from "../types";
 import { TextField } from "./ui";
@@ -20,6 +22,22 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({
   const { form, setForm, clearForm, createProduct } = useCreateProduct();
 
   const handleCreate = async () => {
+    if (form.name === "" || form.sku === "") {
+      toast.error("All fields are required", {
+        id: "cpm-err-toast",
+        duration: 5000,
+        style: {
+          background: COLORS.ERROR,
+          color: COLORS.LIGHT,
+        },
+        iconTheme: {
+          primary: COLORS.LIGHT,
+          secondary: COLORS.ERROR,
+        },
+      });
+      return;
+    }
+
     const res: Product | undefined = await createProduct();
     if (res) {
       onClickCreate(res);

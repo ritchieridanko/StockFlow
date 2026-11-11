@@ -6,6 +6,7 @@ import {
   DeleteProductModal,
   Paginator,
   ProductList,
+  UpdateProductModal,
 } from "./components";
 import { useDeleteProduct, useFetchAllProducts } from "./hooks";
 import type { ProductListItem } from "./types";
@@ -19,6 +20,7 @@ const App: React.FC = () => {
     total: totalProducts,
     loading: isFetchingProducts,
     append: appendProduct,
+    replace: replaceProduct,
     remove: removeProduct,
   } = useFetchAllProducts(page, size);
   const { deleteProduct } = useDeleteProduct();
@@ -26,6 +28,8 @@ const App: React.FC = () => {
   const [selectedProduct, setSelectedProduct] =
     useState<ProductListItem | null>(null);
   const [createProductModalVisible, setCreateProductModalVisible] =
+    useState<boolean>(false);
+  const [updateProductModalVisible, setUpdateProductModalVisible] =
     useState<boolean>(false);
   const [deleteProductModalVisible, setDeleteProductModalVisible] =
     useState<boolean>(false);
@@ -62,7 +66,10 @@ const App: React.FC = () => {
             <ProductList
               products={products}
               isLoading={isFetchingProducts}
-              onClickUpdate={() => {}}
+              onClickUpdate={(v) => {
+                setSelectedProduct(v);
+                setUpdateProductModalVisible(true);
+              }}
               onClickDelete={(v) => {
                 setSelectedProduct(v);
                 setDeleteProductModalVisible(true);
@@ -85,6 +92,20 @@ const App: React.FC = () => {
           setCreateProductModalVisible(false);
         }}
         onClickCancel={() => setCreateProductModalVisible(false)}
+      />
+
+      <UpdateProductModal
+        isVisible={updateProductModalVisible}
+        product={selectedProduct}
+        onClickUpdate={(v) => {
+          replaceProduct(v, selectedProduct?.last_movement_at);
+          setUpdateProductModalVisible(false);
+          setSelectedProduct(null);
+        }}
+        onClickCancel={() => {
+          setUpdateProductModalVisible(false);
+          setSelectedProduct(null);
+        }}
       />
 
       <DeleteProductModal
