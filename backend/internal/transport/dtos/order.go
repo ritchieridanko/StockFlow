@@ -38,4 +38,12 @@ type (
 		Customer string             `json:"customer" binding:"required"`
 		Items    []OrderItemRequest `json:"items"`
 	}
+
+	GetAllOrdersRequest struct {
+		// Queries
+		Search *string `form:"search"`
+
+		// Pagination
+		PaginationParams
+	}
 )

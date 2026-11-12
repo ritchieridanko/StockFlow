@@ -21,7 +21,7 @@ func NewOrderHandler(ou usecases.OrderUsecase) *OrderHandler {
 	return &OrderHandler{ou: ou}
 }
 
-func (h *OrderHandler) Create(ctx *gin.Context) {
+func (h *OrderHandler) CreateOrder(ctx *gin.Context) {
 	var payload dtos.CreateOrderRequest
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		ce.NewError(
@@ -60,7 +60,7 @@ func (h *OrderHandler) Create(ctx *gin.Context) {
 	)
 }
 
-func (h *OrderHandler) GetByID(ctx *gin.Context) {
+func (h *OrderHandler) GetOrderByID(ctx *gin.Context) {
 	orderID, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ce.NewError(
@@ -91,7 +91,54 @@ func (h *OrderHandler) GetByID(ctx *gin.Context) {
 	)
 }
 
-func (h *OrderHandler) Cancel(ctx *gin.Context) {
+func (h *OrderHandler) GetAllOrders(ctx *gin.Context) {
+	var params dtos.GetAllOrdersRequest
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		ce.NewError(
+			ce.CodeInvalidParam,
+			ce.MsgInvalidParam,
+			fmt.Errorf("failed to bind query params: %w", err),
+		).Bind(
+			ctx,
+		)
+		return
+	}
+
+	os, total, err := h.ou.GetAllOrders(
+		ctx.Request.Context(),
+		&models.GetAllOrdersReq{
+			Search: params.Search,
+
+			Pagination: models.Pagination{
+				Page: params.Page,
+				Size: params.Size,
+			},
+		},
+	)
+	if err != nil {
+		err.Bind(ctx)
+		return
+	}
+
+	orders := make([]dtos.Order, 0, params.Size)
+	for _, o := range os {
+		orders = append(orders, *h.toOrder(&o))
+	}
+
+	utils.SetResponse(
+		ctx,
+		http.StatusOK,
+		"Orders retrieved successfully",
+		orders,
+		&utils.Pagination{
+			Page:  params.Page,
+			Size:  params.Size,
+			Total: total,
+		},
+	)
+}
+
+func (h *OrderHandler) CancelOrder(ctx *gin.Context) {
 	orderID, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ce.NewError(

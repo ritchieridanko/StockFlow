@@ -10,6 +10,7 @@ import (
 	"github.com/ritchieridanko/stockflow/backend/internal/infra/database"
 	"github.com/ritchieridanko/stockflow/backend/internal/models"
 	"github.com/ritchieridanko/stockflow/backend/internal/repositories"
+	"github.com/ritchieridanko/stockflow/backend/internal/utils"
 	"github.com/ritchieridanko/stockflow/backend/internal/utils/ce"
 	"github.com/ritchieridanko/stockflow/backend/internal/utils/validator"
 	"go.opentelemetry.io/otel/trace"
@@ -18,6 +19,7 @@ import (
 type OrderUsecase interface {
 	CreateOrder(ctx context.Context, req *models.CreateOrderReq) (o *models.Order, err *ce.Error)
 	GetOrderByID(ctx context.Context, orderID int) (o *models.Order, err *ce.Error)
+	GetAllOrders(ctx context.Context, req *models.GetAllOrdersReq) (os []models.Order, total int64, err *ce.Error)
 	CancelOrder(ctx context.Context, orderID int) (o *models.Order, err *ce.Error)
 }
 
@@ -199,6 +201,42 @@ func (u *orderUsecase) GetOrderByID(ctx context.Context, orderID int) (*models.O
 
 	o.Items = ois
 	return o, nil
+}
+
+func (u *orderUsecase) GetAllOrders(ctx context.Context, req *models.GetAllOrdersReq) ([]models.Order, int64, *ce.Error) {
+	ctx, span := u.tracer.Start(ctx, "order.get_all")
+	defer span.End()
+
+	// Data Normalization
+	search := utils.TrimSpacePtr(req.Search)
+
+	// Data Validation
+	page := req.Page
+	size := req.Size
+	if page < 1 {
+		page = 1
+	}
+	if size < 1 || size > 100 {
+		size = 10
+	}
+	if search != nil {
+		if ok, why := u.validator.Search(*search); !ok {
+			return nil, 0, ce.NewError(ce.CodeInvalidParam, why, nil)
+		}
+	}
+
+	// All Orders Fetching
+	return u.or.GetAll(
+		ctx,
+		&models.GetAllOrders{
+			Search: search,
+
+			Pagination: models.Pagination{
+				Page: page,
+				Size: size,
+			},
+		},
+	)
 }
 
 func (u *orderUsecase) CancelOrder(ctx context.Context, orderID int) (*models.Order, *ce.Error) {

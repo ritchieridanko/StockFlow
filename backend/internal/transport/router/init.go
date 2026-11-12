@@ -61,13 +61,14 @@ func Init(
 
 	order := api.Group("/orders")
 	{
-		order.POST("", oh.Create)
+		order.POST("", oh.CreateOrder)
+		order.GET("", oh.GetAllOrders)
 
 		id := order.Group("/:id")
 		{
-			id.GET("", oh.GetByID)
+			id.GET("", oh.GetOrderByID)
 
-			id.POST("/cancel", oh.Cancel)
+			id.POST("/cancel", oh.CancelOrder)
 		}
 	}
 

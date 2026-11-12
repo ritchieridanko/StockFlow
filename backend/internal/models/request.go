@@ -46,4 +46,12 @@ type (
 		Customer string
 		Items    []OrderItemReq
 	}
+
+	GetAllOrdersReq struct {
+		// Queries
+		Search *string
+
+		// Pagination
+		Pagination
+	}
 )

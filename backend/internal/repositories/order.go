@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/ritchieridanko/stockflow/backend/internal/infra/database"
 	"github.com/ritchieridanko/stockflow/backend/internal/models"
@@ -13,6 +15,7 @@ import (
 type OrderRepository interface {
 	Create(ctx context.Context, data *models.CreateOrder) (o *models.Order, err *ce.Error)
 	GetByID(ctx context.Context, orderID int) (o *models.Order, err *ce.Error)
+	GetAll(ctx context.Context, params *models.GetAllOrders) (os []models.Order, total int64, err *ce.Error)
 	Cancel(ctx context.Context, orderID int) (o *models.Order, err *ce.Error)
 }
 
@@ -107,6 +110,112 @@ func (r *orderRepository) GetByID(ctx context.Context, orderID int) (*models.Ord
 	}
 
 	return &o, nil
+}
+
+func (r *orderRepository) GetAll(ctx context.Context, params *models.GetAllOrders) ([]models.Order, int64, *ce.Error) {
+	query := ""
+	args := []any{}
+	argPos := 1
+
+	query += `
+		SELECT
+			id, customer, status, total,
+			created_at, updated_at, cancelled_at,
+
+			COUNT(*) OVER() AS total
+		FROM
+			sales_orders
+	`
+
+	searchArgPos := argPos
+	if params.Search != nil {
+		query += " WHERE customer <% $" + strconv.Itoa(argPos)
+		args = append(args, *params.Search)
+		argPos++
+	}
+
+	sortClauses := []string{"created_at DESC"}
+	if params.Search != nil {
+		sortClauses = append(
+			sortClauses,
+			"WORD_SIMILARITY(customer, $"+strconv.Itoa(searchArgPos)+") DESC",
+		)
+	}
+
+	query += " ORDER BY " + strings.Join(sortClauses, ", ")
+	query += " LIMIT $" + strconv.Itoa(argPos) + " OFFSET $" + strconv.Itoa(argPos+1)
+	args = append(args, params.Size, params.Offset())
+
+	rows, err := r.database.QueryAll(
+		ctx, query,
+		args...,
+	)
+	if err != nil {
+		return nil, 0, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to get all orders: %w", err),
+		)
+	}
+	defer rows.Close()
+
+	var total int64
+	os := make([]models.Order, 0, params.Size)
+	for rows.Next() {
+		var o models.Order
+		err := rows.Scan(
+			&o.ID,
+			&o.Customer,
+			&o.Status,
+			&o.Total,
+			&o.CreatedAt,
+			&o.UpdatedAt,
+			&o.CancelledAt,
+			&total,
+		)
+		if err != nil {
+			return nil, 0, ce.NewError(
+				ce.CodeInternal,
+				ce.MsgInternalServer,
+				fmt.Errorf("failed to get all orders: %w", err),
+			)
+		}
+
+		os = append(os, o)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, ce.NewError(
+			ce.CodeInternal,
+			ce.MsgInternalServer,
+			fmt.Errorf("failed to get all orders: %w", err),
+		)
+	}
+	if len(os) == 0 {
+		countQuery := "SELECT COUNT(*) FROM sales_orders"
+		countArgs := []any{}
+		countArgPos := 1
+		if params.Search != nil {
+			countQuery += " WHERE customer <% $" + strconv.Itoa(countArgPos)
+			countArgs = append(countArgs, *params.Search)
+			countArgPos++
+		}
+
+		err := r.database.QueryOne(
+			ctx, countQuery,
+			countArgs...,
+		).Scan(
+			&total,
+		)
+		if err != nil {
+			return nil, 0, ce.NewError(
+				ce.CodeInternal,
+				ce.MsgInternalServer,
+				fmt.Errorf("failed to get total orders count: %w", err),
+			)
+		}
+	}
+
+	return os, total, nil
 }
 
 func (r *orderRepository) Cancel(ctx context.Context, orderID int) (*models.Order, *ce.Error) {

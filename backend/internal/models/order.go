@@ -21,4 +21,12 @@ type (
 		Customer string
 		Total    int
 	}
+
+	GetAllOrders struct {
+		// Queries
+		Search *string
+
+		// Pagination
+		Pagination
+	}
 )
