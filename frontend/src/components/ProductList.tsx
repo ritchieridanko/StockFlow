@@ -6,6 +6,7 @@ import { formatPrice } from "../utils";
 interface ProductListProps {
   products: ProductListItem[];
   isLoading: boolean;
+  onClickRow: (value: ProductListItem) => void;
   onClickUpdate: (value: ProductListItem) => void;
   onClickDelete: (value: ProductListItem) => void;
 }
@@ -13,6 +14,7 @@ interface ProductListProps {
 const ProductList: React.FC<ProductListProps> = ({
   products,
   isLoading,
+  onClickRow,
   onClickUpdate,
   onClickDelete,
 }: ProductListProps) => {
@@ -65,6 +67,7 @@ const ProductList: React.FC<ProductListProps> = ({
             <tr
               key={index}
               className="py-2 flex bg-white font-sans font-normal text-gray-700 text-base text-center cursor-pointer hover:bg-blue-100 hover:text-blue-500 active:bg-blue-200 transition-all duration-200 ease-in-out"
+              onClick={() => onClickRow(p)}
             >
               <td className="flex-2">{p.sku}</td>
               <td className="flex-3">{p.name}</td>

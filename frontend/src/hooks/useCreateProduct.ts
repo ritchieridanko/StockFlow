@@ -60,7 +60,7 @@ export const useCreateProduct = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [form]);
 
   const clearForm = () => {
     setForm({ sku: "", name: "", price: 0 });

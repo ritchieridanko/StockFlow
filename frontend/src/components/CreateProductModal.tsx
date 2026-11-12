@@ -17,8 +17,6 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({
   onClickCreate,
   onClickCancel,
 }: CreateProductModalProps) => {
-  if (!isVisible) return null;
-
   const { form, setForm, clearForm, createProduct } = useCreateProduct();
 
   const handleCreate = async () => {
@@ -42,9 +40,10 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({
     if (res) {
       onClickCreate(res);
       clearForm();
-      return;
     }
   };
+
+  if (!isVisible) return null;
 
   return (
     <div

@@ -14,53 +14,56 @@ export const useUpdateProduct = () => {
   });
   const [loading, setLoading] = useState<boolean>(false);
 
-  const updateProduct = useCallback(async (id: number) => {
-    setLoading(true);
+  const updateProduct = useCallback(
+    async (id: number) => {
+      setLoading(true);
 
-    try {
-      const data: APIResponse<Product> = await productApi.update(id, form);
+      try {
+        const data: APIResponse<Product> = await productApi.update(id, form);
 
-      toast.success(data.message, {
-        id: "up-toast",
-        duration: 5000,
-        style: {
-          background: COLORS.SUCCESS,
-          color: COLORS.LIGHT,
-        },
-        iconTheme: {
-          primary: COLORS.LIGHT,
-          secondary: COLORS.SUCCESS,
-        },
-      });
+        toast.success(data.message, {
+          id: "up-toast",
+          duration: 5000,
+          style: {
+            background: COLORS.SUCCESS,
+            color: COLORS.LIGHT,
+          },
+          iconTheme: {
+            primary: COLORS.LIGHT,
+            secondary: COLORS.SUCCESS,
+          },
+        });
 
-      return data.data;
-    } catch (err: unknown) {
-      let message: string = "Something went wrong";
+        return data.data;
+      } catch (err: unknown) {
+        let message: string = "Something went wrong";
 
-      if (isAPIErrResponse(err)) {
-        message = err.error.message;
-      } else if (err instanceof Error) {
-        message = err.message;
-      } else {
-        console.error(err);
+        if (isAPIErrResponse(err)) {
+          message = err.error.message;
+        } else if (err instanceof Error) {
+          message = err.message;
+        } else {
+          console.error(err);
+        }
+
+        toast.error(message, {
+          id: "up-err-toast",
+          duration: 5000,
+          style: {
+            background: COLORS.ERROR,
+            color: COLORS.LIGHT,
+          },
+          iconTheme: {
+            primary: COLORS.LIGHT,
+            secondary: COLORS.ERROR,
+          },
+        });
+      } finally {
+        setLoading(false);
       }
-
-      toast.error(message, {
-        id: "up-err-toast",
-        duration: 5000,
-        style: {
-          background: COLORS.ERROR,
-          color: COLORS.LIGHT,
-        },
-        iconTheme: {
-          primary: COLORS.LIGHT,
-          secondary: COLORS.ERROR,
-        },
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [form],
+  );
 
   const clearForm = () => {
     setForm({ sku: "", name: "", price: 0 });

@@ -1,11 +1,12 @@
 import React from "react";
 
+import { useDeleteProduct } from "../hooks";
 import type { ProductListItem } from "../types";
 
 interface DeleteProductModalProps {
   isVisible: boolean;
   product: ProductListItem | null;
-  onClickDelete: () => void;
+  onClickDelete: (value: number) => void;
   onClickCancel: () => void;
 }
 
@@ -15,6 +16,17 @@ const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
   onClickDelete,
   onClickCancel,
 }: DeleteProductModalProps) => {
+  const { deleteProduct } = useDeleteProduct();
+
+  const handleDelete = async () => {
+    if (!product) return;
+
+    const res: boolean = await deleteProduct(product.id);
+    if (res) {
+      onClickDelete(product.id);
+    }
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -47,7 +59,7 @@ const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
           </button>
           <button
             className="px-4 py-2 bg-red-500 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-red-600"
-            onClick={onClickDelete}
+            onClick={handleDelete}
           >
             <p className="font-sans font-medium text-white text-base">
               Delete Product

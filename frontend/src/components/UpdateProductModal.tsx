@@ -19,8 +19,6 @@ const UpdateProductModal: React.FC<UpdateProductModalProps> = ({
   onClickUpdate,
   onClickCancel,
 }: UpdateProductModalProps) => {
-  if (!isVisible) return null;
-
   const { form, setForm, clearForm, updateProduct } = useUpdateProduct();
 
   useEffect(() => {
@@ -55,9 +53,10 @@ const UpdateProductModal: React.FC<UpdateProductModalProps> = ({
     if (res) {
       onClickUpdate(res);
       clearForm();
-      return;
     }
   };
+
+  if (!isVisible) return null;
 
   return (
     <div

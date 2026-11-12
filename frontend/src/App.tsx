@@ -6,9 +6,10 @@ import {
   DeleteProductModal,
   Paginator,
   ProductList,
+  StockMovementsModal,
   UpdateProductModal,
 } from "./components";
-import { useDeleteProduct, useFetchAllProducts } from "./hooks";
+import { useFetchAllProducts } from "./hooks";
 import type { ProductListItem } from "./types";
 
 const App: React.FC = () => {
@@ -23,7 +24,6 @@ const App: React.FC = () => {
     replace: replaceProduct,
     remove: removeProduct,
   } = useFetchAllProducts(page, size);
-  const { deleteProduct } = useDeleteProduct();
 
   const [selectedProduct, setSelectedProduct] =
     useState<ProductListItem | null>(null);
@@ -33,15 +33,8 @@ const App: React.FC = () => {
     useState<boolean>(false);
   const [deleteProductModalVisible, setDeleteProductModalVisible] =
     useState<boolean>(false);
-
-  const handleDelete = async () => {
-    if (!selectedProduct) return;
-
-    const res: boolean = await deleteProduct(selectedProduct.id);
-    if (res) {
-      removeProduct(selectedProduct.id);
-    }
-  };
+  const [stockMovementsModalVisible, setStockMovementsModalVisible] =
+    useState<boolean>(false);
 
   return (
     <>
@@ -66,6 +59,10 @@ const App: React.FC = () => {
             <ProductList
               products={products}
               isLoading={isFetchingProducts}
+              onClickRow={(v) => {
+                setSelectedProduct(v);
+                setStockMovementsModalVisible(true);
+              }}
               onClickUpdate={(v) => {
                 setSelectedProduct(v);
                 setUpdateProductModalVisible(true);
@@ -111,13 +108,22 @@ const App: React.FC = () => {
       <DeleteProductModal
         isVisible={deleteProductModalVisible}
         product={selectedProduct}
-        onClickDelete={() => {
-          handleDelete();
+        onClickDelete={(v) => {
+          removeProduct(v);
           setDeleteProductModalVisible(false);
           setSelectedProduct(null);
         }}
         onClickCancel={() => {
           setDeleteProductModalVisible(false);
+          setSelectedProduct(null);
+        }}
+      />
+
+      <StockMovementsModal
+        isVisible={stockMovementsModalVisible}
+        product={selectedProduct}
+        onClickOutside={() => {
+          setStockMovementsModalVisible(false);
           setSelectedProduct(null);
         }}
       />
