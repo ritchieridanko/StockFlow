@@ -20,6 +20,7 @@ const App: React.FC = () => {
     products,
     total: totalProducts,
     loading: isFetchingProducts,
+    refetch: refetchProducts,
     append: appendProduct,
     replace: replaceProduct,
     remove: removeProduct,
@@ -122,6 +123,9 @@ const App: React.FC = () => {
       <StockMovementsModal
         isVisible={stockMovementsModalVisible}
         product={selectedProduct}
+        onUpdate={() => {
+          refetchProducts();
+        }}
         onClickOutside={() => {
           setStockMovementsModalVisible(false);
           setSelectedProduct(null);

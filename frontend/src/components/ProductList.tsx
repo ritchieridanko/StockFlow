@@ -83,7 +83,10 @@ const ProductList: React.FC<ProductListProps> = ({
                 <div className="flex flex-row justify-center items-center gap-2">
                   <button
                     className="px-2 bg-orange-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-orange-200"
-                    onClick={() => onClickUpdate(p)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClickUpdate(p);
+                    }}
                   >
                     <p className="font-sans font-medium text-orange-500 text-sm">
                       Update
@@ -91,7 +94,10 @@ const ProductList: React.FC<ProductListProps> = ({
                   </button>
                   <button
                     className="px-2 bg-red-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-red-200"
-                    onClick={() => onClickDelete(p)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClickDelete(p);
+                    }}
                   >
                     <p className="font-sans font-medium text-red-500 text-sm">
                       Delete

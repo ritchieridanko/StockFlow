@@ -111,7 +111,7 @@ export interface UpdateProductPayload {
 }
 
 export interface UpdateStockPayload {
-  type: string;
+  type: StockMovementType | "";
   quantity: number;
   note?: string;
 }

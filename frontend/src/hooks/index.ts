@@ -3,6 +3,7 @@ import { useDeleteProduct } from "./useDeleteProduct";
 import { useFetchAllProducts } from "./useFetchAllProducts";
 import { useFetchAllStockMovements } from "./useFetchAllStockMovements";
 import { useUpdateProduct } from "./useUpdateProduct";
+import { useUpdateStock } from "./useUpdateStock";
 
 export {
   useCreateProduct,
@@ -10,4 +11,5 @@ export {
   useFetchAllProducts,
   useFetchAllStockMovements,
   useUpdateProduct,
+  useUpdateStock,
 };
