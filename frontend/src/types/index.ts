@@ -3,6 +3,7 @@ import type {
   APIResponse,
   CreateOrderPayload,
   CreateProductPayload,
+  GetAllOrdersParams,
   GetAllProductsParams,
   UpdateProductPayload,
   UpdateStockPayload,
@@ -13,12 +14,14 @@ import type {
   StockMovement,
 } from "./api";
 import type { StockMovementType } from "./stock_movement";
+import type { Tab } from "./tab";
 
 export type {
   APIErrResponse,
   APIResponse,
   CreateOrderPayload,
   CreateProductPayload,
+  GetAllOrdersParams,
   GetAllProductsParams,
   UpdateProductPayload,
   UpdateStockPayload,
@@ -28,4 +31,4 @@ export type {
   ProductListItem,
   StockMovement,
 };
-export type { StockMovementType };
+export type { StockMovementType, Tab };

@@ -6,7 +6,11 @@ import { COLORS } from "../constants";
 import type { APIResponse, Product, ProductListItem } from "../types";
 import { isAPIErrResponse } from "../utils";
 
-export const useFetchAllProducts = (page: number, size: number) => {
+export const useFetchAllProducts = (
+  page: number,
+  size: number,
+  fire: boolean,
+) => {
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -51,8 +55,8 @@ export const useFetchAllProducts = (page: number, size: number) => {
   }, [page, size]);
 
   useEffect(() => {
-    fetchAllProducts();
-  }, [fetchAllProducts]);
+    if (fire) fetchAllProducts();
+  }, [fetchAllProducts, fire]);
 
   const append = (product: Product) => {
     setProducts((prev) => [

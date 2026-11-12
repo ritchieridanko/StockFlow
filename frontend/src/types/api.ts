@@ -98,6 +98,12 @@ export interface CreateProductPayload {
   price: number;
 }
 
+export interface GetAllOrdersParams {
+  search?: string;
+  page: number;
+  size: number;
+}
+
 export interface GetAllProductsParams {
   search?: string;
   page: number;
