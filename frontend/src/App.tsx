@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Toaster } from "react-hot-toast";
 
 import {
+  CancelOrderModal,
   CreateOrderModal,
   CreateProductModal,
   DeleteProductModal,
@@ -35,6 +36,7 @@ const App: React.FC = () => {
     total: totalOrders,
     loading: isFetchingOrders,
     append: appendOrder,
+    replace: replaceOrder,
   } = useFetchAllOrders(page, size, tab === "Orders");
 
   const [selectedProduct, setSelectedProduct] =
@@ -53,6 +55,8 @@ const App: React.FC = () => {
   const [orderProducts, setOrderProducts] = useState<OrderProduct[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [createOrderModalVisible, setCreateOrderModalVisible] =
+    useState<boolean>(false);
+  const [cancelOrderModalVisible, setCancelOrderModalVisible] =
     useState<boolean>(false);
 
   return (
@@ -143,6 +147,7 @@ const App: React.FC = () => {
                   }}
                   onClickCancel={(v) => {
                     setSelectedOrder(v);
+                    setCancelOrderModalVisible(true);
                   }}
                 />
                 {!isFetchingOrders && orders.length > 0 && (
@@ -242,6 +247,20 @@ const App: React.FC = () => {
           );
         }}
         onClickCancel={() => setCreateOrderModalVisible(false)}
+      />
+
+      <CancelOrderModal
+        isVisible={cancelOrderModalVisible}
+        order={selectedOrder}
+        onClickConfirm={(v) => {
+          replaceOrder(v);
+          setCancelOrderModalVisible(false);
+          setSelectedOrder(null);
+        }}
+        onClickNo={() => {
+          setCancelOrderModalVisible(false);
+          setSelectedOrder(null);
+        }}
       />
 
       <Toaster position="bottom-right" />

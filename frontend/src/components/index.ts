@@ -1,3 +1,4 @@
+import CancelOrderModal from "./CancelOrderModal";
 import CreateOrderModal from "./CreateOrderModal";
 import CreateProductModal from "./CreateProductModal";
 import DeleteProductModal from "./DeleteProductModal";
@@ -9,6 +10,7 @@ import StockMovementsModal from "./StockMovementsModal";
 import UpdateProductModal from "./UpdateProductModal";
 
 export {
+  CancelOrderModal,
   CreateOrderModal,
   CreateProductModal,
   DeleteProductModal,
