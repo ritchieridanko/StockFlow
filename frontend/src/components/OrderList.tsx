@@ -75,19 +75,21 @@ const OrderList: React.FC<OrderListProps> = ({
                   : ""}
               </td>
               <td className="flex-2">
-                <div className="flex flex-row justify-center items-center gap-2">
-                  <button
-                    className="px-2 bg-red-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-red-200"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onClickCancel(o);
-                    }}
-                  >
-                    <p className="font-sans font-medium text-red-500 text-sm">
-                      Cancel
-                    </p>
-                  </button>
-                </div>
+                {!o.cancelled_at && (
+                  <div className="flex flex-row justify-center items-center gap-2">
+                    <button
+                      className="px-2 bg-red-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-red-200"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onClickCancel(o);
+                      }}
+                    >
+                      <p className="font-sans font-medium text-red-500 text-sm">
+                        Cancel
+                      </p>
+                    </button>
+                  </div>
+                )}
               </td>
             </tr>
           ))

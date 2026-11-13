@@ -2,6 +2,7 @@ import CancelOrderModal from "./CancelOrderModal";
 import CreateOrderModal from "./CreateOrderModal";
 import CreateProductModal from "./CreateProductModal";
 import DeleteProductModal from "./DeleteProductModal";
+import OrderItemsModal from "./OrderItemsModal";
 import OrderList from "./OrderList";
 import OrderProductModal from "./OrderProductModal";
 import Paginator from "./Paginator";
@@ -14,6 +15,7 @@ export {
   CreateOrderModal,
   CreateProductModal,
   DeleteProductModal,
+  OrderItemsModal,
   OrderList,
   OrderProductModal,
   Paginator,

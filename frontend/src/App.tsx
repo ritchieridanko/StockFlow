@@ -6,6 +6,7 @@ import {
   CreateOrderModal,
   CreateProductModal,
   DeleteProductModal,
+  OrderItemsModal,
   OrderList,
   OrderProductModal,
   Paginator,
@@ -57,6 +58,8 @@ const App: React.FC = () => {
   const [createOrderModalVisible, setCreateOrderModalVisible] =
     useState<boolean>(false);
   const [cancelOrderModalVisible, setCancelOrderModalVisible] =
+    useState<boolean>(false);
+  const [orderItemsModalVisible, setOrderItemsModalVisible] =
     useState<boolean>(false);
 
   return (
@@ -144,6 +147,7 @@ const App: React.FC = () => {
                   isLoading={isFetchingOrders}
                   onClickRow={(v) => {
                     setSelectedOrder(v);
+                    setOrderItemsModalVisible(true);
                   }}
                   onClickCancel={(v) => {
                     setSelectedOrder(v);
@@ -259,6 +263,15 @@ const App: React.FC = () => {
         }}
         onClickNo={() => {
           setCancelOrderModalVisible(false);
+          setSelectedOrder(null);
+        }}
+      />
+
+      <OrderItemsModal
+        isVisible={orderItemsModalVisible}
+        order={selectedOrder}
+        onClickOutside={() => {
+          setOrderItemsModalVisible(false);
           setSelectedOrder(null);
         }}
       />

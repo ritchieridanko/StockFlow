@@ -5,6 +5,7 @@ import { useDeleteProduct } from "./useDeleteProduct";
 import { useFetchAllOrders } from "./useFetchAllOrders";
 import { useFetchAllProducts } from "./useFetchAllProducts";
 import { useFetchAllStockMovements } from "./useFetchAllStockMovements";
+import { useFetchOrderById } from "./useFetchOrderByID";
 import { useUpdateProduct } from "./useUpdateProduct";
 import { useUpdateStock } from "./useUpdateStock";
 
@@ -16,6 +17,7 @@ export {
   useFetchAllOrders,
   useFetchAllProducts,
   useFetchAllStockMovements,
+  useFetchOrderById,
   useUpdateProduct,
   useUpdateStock,
 };
