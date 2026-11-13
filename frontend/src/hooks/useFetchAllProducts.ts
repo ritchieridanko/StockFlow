@@ -9,6 +9,7 @@ import { isAPIErrResponse } from "../utils";
 export const useFetchAllProducts = (
   page: number,
   size: number,
+  search: string,
   fire: boolean,
 ) => {
   const [products, setProducts] = useState<ProductListItem[]>([]);
@@ -22,6 +23,7 @@ export const useFetchAllProducts = (
       const data: APIResponse<ProductListItem[]> = await productApi.getAll({
         page: page,
         size: size,
+        search: search,
       });
 
       setProducts(data.data);
@@ -52,7 +54,7 @@ export const useFetchAllProducts = (
     } finally {
       setLoading(false);
     }
-  }, [page, size]);
+  }, [page, size, search]);
 
   useEffect(() => {
     if (fire) fetchAllProducts();

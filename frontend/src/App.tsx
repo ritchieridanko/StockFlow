@@ -14,7 +14,7 @@ import {
   StockMovementsModal,
   UpdateProductModal,
 } from "./components";
-import { Toggler } from "./components/ui";
+import { SearchField, Toggler } from "./components/ui";
 import { useFetchAllOrders, useFetchAllProducts } from "./hooks";
 import type { Order, OrderProduct, ProductListItem, Tab } from "./types";
 
@@ -22,6 +22,9 @@ const App: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [size, setSize] = useState<number>(10);
   const [tab, setTab] = useState<Tab>("Products");
+
+  const [searchParam, setSearchParam] = useState<string>("");
+  const [search, setSearch] = useState<string>("");
 
   const {
     products,
@@ -31,14 +34,14 @@ const App: React.FC = () => {
     append: appendProduct,
     replace: replaceProduct,
     remove: removeProduct,
-  } = useFetchAllProducts(page, size, tab === "Products");
+  } = useFetchAllProducts(page, size, searchParam, tab === "Products");
   const {
     orders,
     total: totalOrders,
     loading: isFetchingOrders,
     append: appendOrder,
     replace: replaceOrder,
-  } = useFetchAllOrders(page, size, tab === "Orders");
+  } = useFetchAllOrders(page, size, searchParam, tab === "Orders");
 
   const [selectedProduct, setSelectedProduct] =
     useState<ProductListItem | null>(null);
@@ -77,6 +80,7 @@ const App: React.FC = () => {
                   label: "Products",
                   onClick: () => {
                     setPage(1);
+                    setSearch("");
                     setTab("Products");
                   },
                 }}
@@ -84,14 +88,24 @@ const App: React.FC = () => {
                   label: "Orders",
                   onClick: () => {
                     setPage(1);
+                    setSearch("");
                     setTab("Orders");
                   },
                 }}
                 currentState={tab}
               />
+              <SearchField
+                placeholder={`Search by ${tab === "Products" ? "sku or name" : "customer"}`}
+                value={search}
+                onChange={(v) => setSearch(v)}
+                onPressEnter={() => {
+                  setPage(1);
+                  setSearchParam(search);
+                }}
+              />
               {tab === "Products" ? (
                 <button
-                  className="px-4 py-2 bg-blue-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-blue-200"
+                  className="px-4 py-2 w-35 bg-blue-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-blue-200"
                   onClick={() => setCreateProductModalVisible(true)}
                 >
                   <p className="font-sans font-medium text-blue-500 text-base">
@@ -100,7 +114,7 @@ const App: React.FC = () => {
                 </button>
               ) : (
                 <button
-                  className="px-4 py-2 bg-blue-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-blue-200"
+                  className="px-4 py-2 w-35 bg-blue-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-blue-200"
                   onClick={() => setCreateOrderModalVisible(true)}
                 >
                   <p className="font-sans font-medium text-blue-500 text-base">

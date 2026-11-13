@@ -9,6 +9,7 @@ import { isAPIErrResponse } from "../utils";
 export const useFetchAllOrders = (
   page: number,
   size: number,
+  search: string,
   fire: boolean,
 ) => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -22,6 +23,7 @@ export const useFetchAllOrders = (
       const data: APIResponse<Order[]> = await orderApi.getAll({
         page: page,
         size: size,
+        search: search,
       });
 
       setOrders(data.data);
@@ -52,7 +54,7 @@ export const useFetchAllOrders = (
     } finally {
       setLoading(false);
     }
-  }, [page, size]);
+  }, [page, size, search]);
 
   useEffect(() => {
     if (fire) fetchAllOrders();
