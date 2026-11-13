@@ -20,7 +20,7 @@ import type { Order, OrderProduct, ProductListItem, Tab } from "./types";
 
 const App: React.FC = () => {
   const [page, setPage] = useState<number>(1);
-  const [size, setSize] = useState<number>(10);
+  const [size, _] = useState<number>(10);
   const [tab, setTab] = useState<Tab>("Products");
 
   const [searchParam, setSearchParam] = useState<string>("");
