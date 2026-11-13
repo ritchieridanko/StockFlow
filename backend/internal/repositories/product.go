@@ -115,6 +115,11 @@ func (r *productRepository) GetStock(ctx context.Context, productID int) (int, *
 }
 
 func (r *productRepository) GetAll(ctx context.Context, params *models.GetAllProducts) ([]models.ProductListItem, int64, *ce.Error) {
+	isTrigramEligible := false
+	if params.Search != nil {
+		isTrigramEligible = len(*params.Search) >= 3
+	}
+
 	query := ""
 	args := []any{}
 	argPos := 1
@@ -136,17 +141,21 @@ func (r *productRepository) GetAll(ctx context.Context, params *models.GetAllPro
 
 	searchArgPos := argPos
 	if params.Search != nil {
-		query += " WHERE p.sku <% $" + strconv.Itoa(argPos) + " OR p.name <% $" + strconv.Itoa(argPos)
+		if isTrigramEligible {
+			query += " WHERE $" + strconv.Itoa(argPos) + " <% p.sku OR $" + strconv.Itoa(argPos) + " <% p.name"
+		} else {
+			query += " WHERE (p.sku ILIKE '%' || $" + strconv.Itoa(argPos) + " || '%' OR p.name ILIKE '%' || $" + strconv.Itoa(argPos) + " || '%')"
+		}
 		args = append(args, *params.Search)
 		argPos++
 	}
 
 	query += " GROUP BY p.id"
 	sortClauses := []string{"last_movement_at DESC NULLS LAST"}
-	if params.Search != nil {
+	if params.Search != nil && isTrigramEligible {
 		sortClauses = append(
 			sortClauses,
-			"GREATEST(WORD_SIMILARITY(p.sku, $"+strconv.Itoa(searchArgPos)+"), WORD_SIMILARITY(p.name, $"+strconv.Itoa(searchArgPos)+")) DESC",
+			"GREATEST(WORD_SIMILARITY($"+strconv.Itoa(searchArgPos)+", p.sku), WORD_SIMILARITY($"+strconv.Itoa(searchArgPos)+", p.name)) DESC",
 		)
 	}
 
@@ -211,7 +220,11 @@ func (r *productRepository) GetAll(ctx context.Context, params *models.GetAllPro
 		countArgs := []any{}
 		countArgPos := 1
 		if params.Search != nil {
-			countQuery += " WHERE sku <% $" + strconv.Itoa(countArgPos) + " OR name <% $" + strconv.Itoa(countArgPos)
+			if isTrigramEligible {
+				countQuery += " WHERE $" + strconv.Itoa(countArgPos) + " <% sku OR $" + strconv.Itoa(countArgPos) + " <% name"
+			} else {
+				countQuery += " WHERE (sku ILIKE '%' || $" + strconv.Itoa(countArgPos) + " || '%' OR name ILIKE '%' || $" + strconv.Itoa(countArgPos) + " || '%')"
+			}
 			countArgs = append(countArgs, *params.Search)
 			countArgPos++
 		}

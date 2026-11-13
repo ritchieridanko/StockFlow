@@ -10,7 +10,7 @@ type (
 	response[T any] struct {
 		Status     int         `json:"status"`
 		Message    string      `json:"message"`
-		Data       T           `json:"data,omitempty"`
+		Data       T           `json:"data"`
 		Metadata   metadata    `json:"metadata"`
 		Pagination *Pagination `json:"pagination,omitempty"`
 	}

@@ -113,6 +113,11 @@ func (r *orderRepository) GetByID(ctx context.Context, orderID int) (*models.Ord
 }
 
 func (r *orderRepository) GetAll(ctx context.Context, params *models.GetAllOrders) ([]models.Order, int64, *ce.Error) {
+	isTrigramEligible := false
+	if params.Search != nil {
+		isTrigramEligible = len(*params.Search) >= 3
+	}
+
 	query := ""
 	args := []any{}
 	argPos := 1
@@ -129,16 +134,20 @@ func (r *orderRepository) GetAll(ctx context.Context, params *models.GetAllOrder
 
 	searchArgPos := argPos
 	if params.Search != nil {
-		query += " WHERE customer <% $" + strconv.Itoa(argPos)
+		if isTrigramEligible {
+			query += " WHERE $" + strconv.Itoa(argPos) + " <% customer"
+		} else {
+			query += " WHERE customer ILIKE '%' || $" + strconv.Itoa(argPos) + " || '%'"
+		}
 		args = append(args, *params.Search)
 		argPos++
 	}
 
 	sortClauses := []string{"created_at DESC"}
-	if params.Search != nil {
+	if params.Search != nil && isTrigramEligible {
 		sortClauses = append(
 			sortClauses,
-			"WORD_SIMILARITY(customer, $"+strconv.Itoa(searchArgPos)+") DESC",
+			"WORD_SIMILARITY($"+strconv.Itoa(searchArgPos)+", customer) DESC",
 		)
 	}
 
@@ -195,7 +204,11 @@ func (r *orderRepository) GetAll(ctx context.Context, params *models.GetAllOrder
 		countArgs := []any{}
 		countArgPos := 1
 		if params.Search != nil {
-			countQuery += " WHERE customer <% $" + strconv.Itoa(countArgPos)
+			if isTrigramEligible {
+				countQuery += " WHERE $" + strconv.Itoa(countArgPos) + " <% customer"
+			} else {
+				countQuery += " WHERE customer ILIKE '%' || $" + strconv.Itoa(countArgPos) + " || '%'"
+			}
 			countArgs = append(countArgs, *params.Search)
 			countArgPos++
 		}
