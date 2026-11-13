@@ -196,7 +196,7 @@ const StockMovementsModal: React.FC<StockMovementsModalProps> = ({
             </div>
             <div className="flex flex-row justify-end items-center gap-4">
               <button
-                className="px-4 py-1 bg-gray-200 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-300"
                 onClick={() => setUpdateFormVisible(false)}
               >
                 <p className="font-sans font-medium text-gray-700 text-base">

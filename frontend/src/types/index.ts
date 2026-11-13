@@ -5,6 +5,7 @@ import type {
   CreateProductPayload,
   GetAllOrdersParams,
   GetAllProductsParams,
+  OrderItemPayload,
   UpdateProductPayload,
   UpdateStockPayload,
   Order,
@@ -13,6 +14,8 @@ import type {
   ProductListItem,
   StockMovement,
 } from "./api";
+import type { IconProps } from "./icon";
+import type { OrderProduct } from "./product";
 import type { StockMovementType } from "./stock_movement";
 import type { Tab } from "./tab";
 
@@ -23,6 +26,7 @@ export type {
   CreateProductPayload,
   GetAllOrdersParams,
   GetAllProductsParams,
+  OrderItemPayload,
   UpdateProductPayload,
   UpdateStockPayload,
   Order,
@@ -31,4 +35,4 @@ export type {
   ProductListItem,
   StockMovement,
 };
-export type { StockMovementType, Tab };
+export type { IconProps, OrderProduct, StockMovementType, Tab };

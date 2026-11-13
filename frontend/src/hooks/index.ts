@@ -1,3 +1,4 @@
+import { useCreateOrder } from "./useCreateOrder";
 import { useCreateProduct } from "./useCreateProduct";
 import { useDeleteProduct } from "./useDeleteProduct";
 import { useFetchAllOrders } from "./useFetchAllOrders";
@@ -7,6 +8,7 @@ import { useUpdateProduct } from "./useUpdateProduct";
 import { useUpdateStock } from "./useUpdateStock";
 
 export {
+  useCreateOrder,
   useCreateProduct,
   useDeleteProduct,
   useFetchAllOrders,

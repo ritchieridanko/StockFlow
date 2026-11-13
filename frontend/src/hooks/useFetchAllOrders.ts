@@ -59,7 +59,7 @@ export const useFetchAllOrders = (
   }, [fetchAllOrders, fire]);
 
   const append = (order: Order) => {
-    setOrders((prev) => [...prev, order]);
+    setOrders((prev) => [order, ...prev]);
   };
 
   const replace = (order: Order) => {

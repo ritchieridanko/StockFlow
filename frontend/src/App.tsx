@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Toaster } from "react-hot-toast";
 
 import {
+  CreateOrderModal,
   CreateProductModal,
   DeleteProductModal,
   OrderList,
+  OrderProductModal,
   Paginator,
   ProductList,
   StockMovementsModal,
@@ -12,7 +14,7 @@ import {
 } from "./components";
 import { Toggler } from "./components/ui";
 import { useFetchAllOrders, useFetchAllProducts } from "./hooks";
-import type { Order, ProductListItem, Tab } from "./types";
+import type { Order, OrderProduct, ProductListItem, Tab } from "./types";
 
 const App: React.FC = () => {
   const [page, setPage] = useState<number>(1);
@@ -32,11 +34,14 @@ const App: React.FC = () => {
     orders,
     total: totalOrders,
     loading: isFetchingOrders,
+    append: appendOrder,
   } = useFetchAllOrders(page, size, tab === "Orders");
 
   const [selectedProduct, setSelectedProduct] =
     useState<ProductListItem | null>(null);
   const [createProductModalVisible, setCreateProductModalVisible] =
+    useState<boolean>(false);
+  const [orderProductModalVisible, setOrderProductModalVisible] =
     useState<boolean>(false);
   const [updateProductModalVisible, setUpdateProductModalVisible] =
     useState<boolean>(false);
@@ -45,7 +50,10 @@ const App: React.FC = () => {
   const [stockMovementsModalVisible, setStockMovementsModalVisible] =
     useState<boolean>(false);
 
+  const [orderProducts, setOrderProducts] = useState<OrderProduct[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [createOrderModalVisible, setCreateOrderModalVisible] =
+    useState<boolean>(false);
 
   return (
     <>
@@ -74,14 +82,25 @@ const App: React.FC = () => {
                 }}
                 currentState={tab}
               />
-              <button
-                className="px-4 py-2 bg-blue-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-blue-200"
-                onClick={() => setCreateProductModalVisible(true)}
-              >
-                <p className="font-sans font-medium text-blue-500 text-base">
-                  New Product
-                </p>
-              </button>
+              {tab === "Products" ? (
+                <button
+                  className="px-4 py-2 bg-blue-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-blue-200"
+                  onClick={() => setCreateProductModalVisible(true)}
+                >
+                  <p className="font-sans font-medium text-blue-500 text-base">
+                    New Product
+                  </p>
+                </button>
+              ) : (
+                <button
+                  className="px-4 py-2 bg-blue-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-blue-200"
+                  onClick={() => setCreateOrderModalVisible(true)}
+                >
+                  <p className="font-sans font-medium text-blue-500 text-base">
+                    New Order
+                  </p>
+                </button>
+              )}
             </div>
 
             {tab === "Products" ? (
@@ -93,6 +112,10 @@ const App: React.FC = () => {
                     setSelectedProduct(v);
                     setStockMovementsModalVisible(true);
                   }}
+                  onClickOrder={(v) => {
+                    setSelectedProduct(v);
+                    setOrderProductModalVisible(true);
+                  }}
                   onClickUpdate={(v) => {
                     setSelectedProduct(v);
                     setUpdateProductModalVisible(true);
@@ -102,11 +125,13 @@ const App: React.FC = () => {
                     setDeleteProductModalVisible(true);
                   }}
                 />
-                <Paginator
-                  currentPage={page}
-                  totalPages={Math.ceil(totalProducts / size)}
-                  onPageChange={(v) => setPage((prev) => prev + v)}
-                />
+                {!isFetchingProducts && products.length > 0 && (
+                  <Paginator
+                    currentPage={page}
+                    totalPages={Math.ceil(totalProducts / size)}
+                    onPageChange={(v) => setPage((prev) => prev + v)}
+                  />
+                )}
               </>
             ) : (
               <>
@@ -120,11 +145,13 @@ const App: React.FC = () => {
                     setSelectedOrder(v);
                   }}
                 />
-                <Paginator
-                  currentPage={page}
-                  totalPages={Math.ceil(totalOrders / size)}
-                  onPageChange={(v) => setPage((prev) => prev + v)}
-                />
+                {!isFetchingOrders && orders.length > 0 && (
+                  <Paginator
+                    currentPage={page}
+                    totalPages={Math.ceil(totalOrders / size)}
+                    onPageChange={(v) => setPage((prev) => prev + v)}
+                  />
+                )}
               </>
             )}
           </div>
@@ -138,6 +165,27 @@ const App: React.FC = () => {
           setCreateProductModalVisible(false);
         }}
         onClickCancel={() => setCreateProductModalVisible(false)}
+      />
+
+      <OrderProductModal
+        isVisible={orderProductModalVisible}
+        product={selectedProduct}
+        onClickConfirm={(product, quantity) => {
+          setOrderProducts((prev) => [
+            ...prev,
+            {
+              name: product.name,
+              sku: product.sku,
+              quantity: quantity,
+            },
+          ]);
+          setOrderProductModalVisible(false);
+          setSelectedProduct(null);
+        }}
+        onClickCancel={() => {
+          setOrderProductModalVisible(false);
+          setSelectedProduct(null);
+        }}
       />
 
       <UpdateProductModal
@@ -178,6 +226,22 @@ const App: React.FC = () => {
           setStockMovementsModalVisible(false);
           setSelectedProduct(null);
         }}
+      />
+
+      <CreateOrderModal
+        isVisible={createOrderModalVisible}
+        orderProducts={orderProducts}
+        onClickCreate={(v) => {
+          appendOrder(v);
+          setOrderProducts([]);
+          setCreateOrderModalVisible(false);
+        }}
+        onClickDelete={(v) => {
+          setOrderProducts((prev) =>
+            prev.filter((product) => product.sku !== v.sku),
+          );
+        }}
+        onClickCancel={() => setCreateOrderModalVisible(false)}
       />
 
       <Toaster position="bottom-right" />

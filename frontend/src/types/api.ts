@@ -82,7 +82,7 @@ export interface APIErrResponse {
   metadata: Metadata;
 }
 
-interface OrderItemPayload {
+export interface OrderItemPayload {
   sku: string;
   quantity: number;
 }

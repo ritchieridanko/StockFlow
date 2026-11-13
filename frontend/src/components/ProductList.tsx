@@ -7,6 +7,7 @@ interface ProductListProps {
   products: ProductListItem[];
   isLoading: boolean;
   onClickRow: (value: ProductListItem) => void;
+  onClickOrder: (value: ProductListItem) => void;
   onClickUpdate: (value: ProductListItem) => void;
   onClickDelete: (value: ProductListItem) => void;
 }
@@ -15,6 +16,7 @@ const ProductList: React.FC<ProductListProps> = ({
   products,
   isLoading,
   onClickRow,
+  onClickOrder,
   onClickUpdate,
   onClickDelete,
 }: ProductListProps) => {
@@ -82,7 +84,18 @@ const ProductList: React.FC<ProductListProps> = ({
               <td className="flex-3">
                 <div className="flex flex-row justify-center items-center gap-2">
                   <button
-                    className="px-2 bg-orange-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-orange-200"
+                    className="px-2 w-15 bg-green-200 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-green-300"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClickOrder(p);
+                    }}
+                  >
+                    <p className="font-sans font-medium text-green-600 text-sm">
+                      Order
+                    </p>
+                  </button>
+                  <button
+                    className="px-2 w-15 bg-orange-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-orange-200"
                     onClick={(e) => {
                       e.stopPropagation();
                       onClickUpdate(p);
@@ -93,7 +106,7 @@ const ProductList: React.FC<ProductListProps> = ({
                     </p>
                   </button>
                   <button
-                    className="px-2 bg-red-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-red-200"
+                    className="px-2 w-15 bg-red-100 rounded-sm cursor-pointer transition-all duration-200 ease-in-out hover:bg-red-200"
                     onClick={(e) => {
                       e.stopPropagation();
                       onClickDelete(p);
